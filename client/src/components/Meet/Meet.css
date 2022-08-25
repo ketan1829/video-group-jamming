@@ -1,0 +1,48 @@
+.screen {
+    /* align-items: flex-start; */
+    background-color: rgba(31,37, 58, 1);
+    /* display: flex; */
+}
+
+.header {
+    /* align-items: flex-start; */
+    background-color: rgba(31,37, 58, 1);
+    /* display: flex; */
+}
+
+.VidContainer {
+    background-color: rgb(22, 23, 30);
+    padding: 10px;
+    border-radius: 15px;
+    height: 510px;
+    
+}
+
+.MyPeerContainer {
+    min-width:100%;
+    border-radius: 4px;
+    border: 5px solid  #fff1cb ;
+    display:flex;
+}
+
+.PeerContainer {
+    border: 5px solid #bfc0ff ;
+    border-radius: 4px;
+    min-width:100%;
+    display:flex;
+
+}
+
+.MyPeerContainer:hover {
+    min-width:100%;
+    border-radius: 4px;
+    border: 5px solid rgb(230, 255, 192);
+
+}
+
+.PeerContainer:hover {
+    min-width:100%;
+    border-radius: 4px;
+    border: 5px solid rgb(246, 255, 166);
+
+}
