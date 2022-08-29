@@ -2,7 +2,7 @@
     background-color: rgba(31,37, 58, 1);
     min-height: 50px;
 
-    position: relative;
+    position: absolute;
     right: 0;
     bottom: 0;
     width: 100%;
@@ -10,8 +10,11 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    align-content: center;
     font-weight: 500;
-
+    padding-bottom: 50px;
+    padding-left: 35px;
+    /* padding: 10px; */
   }
 
 .CameraButton {
@@ -39,4 +42,9 @@
 .col-style { 
     background: '#0092ff'; 
     padding: '8px 0' 
+}
+
+.active, .btn:hover {
+  background-color: rgb(0, 0, 0);
+  color:white;
 }

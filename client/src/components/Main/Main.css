@@ -1,0 +1,32 @@
+.logo {
+    float: left;
+    width: 120px;
+    height: 31px;
+    margin: 16px 24px 16px 0;
+    /* background: rgba(255, 255, 255, 0.3); */
+  }
+
+.ant-layout-header {
+    width: 100%;
+    height: 100%;
+    /* margin: 16px 24px 16px 0; */
+    background: rgba(31,37, 58, 1);
+  }
+
+.content {
+    min-height: 100vh;
+    padding: 24px 50px;
+    padding-bottom: 50px;
+
+}
+
+
+.banner {
+    padding: 75px 90px;
+
+}
+
+.banner-user-title {
+    font-size: 32px;
+    top: 40%;
+}

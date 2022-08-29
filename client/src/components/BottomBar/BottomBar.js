@@ -1,7 +1,9 @@
-import React, { useCallback } from 'react';
-import { Button, Col, Divider, Row } from 'antd';
+import React, { useCallback, useState } from 'react';
+import { Button, Col, Divider, Row, Space, Badge } from 'antd';
 import {
   AudioOutlined,
+  VideoCameraOutlined,
+  VideoCameraFilled,
 } from '@ant-design/icons';
 
 import styled from 'styled-components';
@@ -26,11 +28,19 @@ const BottomBar = ({
     [setShowVideoDevices]
   );
 
+  const [isActive, setIsActive] = useState(false);
+  const [isActiveVid, setIsActiveVid] = useState(false);
+  const [isActiveAud, setIsActiveAud] = useState(false);
+
+  const handleBtnClick = () => {
+    setIsActive(current => !current);
+  };
+
   return (
 
 
     <Row className='bottomRow'>
-      <Col span={12}>col-12</Col>
+      <Col span={12}>Metronome</Col>
       <Col span={12}>
         <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} className='gutter-box' justify='end'>
         {/* <Col className="gutter-row rightPart" span={6}>
@@ -46,20 +56,25 @@ const BottomBar = ({
           <div className='col-style'>col-6</div>
         </Col> */}
 
-        <Col span={6}>
+        <Col span={4}>
           <Button type="primary" danger onClick={goToBack} >End Jam</Button>
         </Col>
         <Col span={6} >
-          <Button ghost onClick={toggleCameraAudio} data-switch='audio'>
+          <Space>
+          <Button ghost onClick={()=>toggleCameraAudio('audio')} className='btn active' >
             <AudioOutlined />
           </Button>
+          <Badge size="small" count={<VideoCameraOutlined />}> 
+          
+          <Button ghost icon={<VideoCameraOutlined />} onClick={()=>{toggleCameraAudio('video');}} size="middle"  />
+            {/* <VideoCameraOutlined /> */}
+          {/* </Button> */}
+          </Badge>
+          {/* <Button type='primary' ml-4>chat</Button> */}
+          </Space>
         </Col>
-        <Col span={6} >
-          <Button ghost onClick={toggleCameraAudio} data-switch='audio'>
-            <AudioOutlined />
-          </Button>
-        </Col>
-        <Col span={6}>col-4</Col>
+        
+        <Col span={9}><Button type='primary'>chat</Button></Col>
         </Row>
 
 

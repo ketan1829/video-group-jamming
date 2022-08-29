@@ -230,7 +230,11 @@ const Meet = (props) => {
   };
 
   const toggleCameraAudio = (e) => {
-    const target = e.target.getAttribute('data-switch');
+    
+
+    console.log("EVENT",e)
+
+    const target = e // .target.getAttribute('data-switch');
 
     setUserVideoAudio((preList) => {
       let videoSwitch = preList['localUser'].video;
@@ -362,8 +366,9 @@ const Meet = (props) => {
   
     <>
 
-  <Layout className="layout screen">
-    <Header className='header' >
+  
+    <Layout>
+    <Header className='header' style={{background: 'rgba(31,37, 58, 1)'}}>
       <div className="logo" style={{
         float: "left",
         width: "130px",
@@ -391,9 +396,11 @@ const Meet = (props) => {
       /> */}
     </Header>
 
+    <Layout className="screen body">
     <Content
       style={{
-        padding: '40px 50px',
+        padding: '40px 80px',
+        height: '1000px',
         backgroundColor: 'rgba(31,37, 58, 1)'
       }}
     >
@@ -426,16 +433,17 @@ const Meet = (props) => {
             </Col>
             
             
+            
       )}
       
     </Row>
 
     </div>
 
-    {/* <Row gutter={[8, 8]}>
+    <Row gutter={[8, 8]}>
       <Col span={12} />
       <Col span={12} />
-    </Row> */}
+    </Row>
 
     <BottomBar
           clickScreenSharing={clickScreenSharing}
@@ -459,7 +467,7 @@ const Meet = (props) => {
 
     </Content>
 
-    
+    </Layout>
 
     {/* <Footer
       style={{
