@@ -10,8 +10,12 @@ import 'antd/dist/antd.css';
 import socket from '../../socket';
 
 const Main = (props) => {
-  const roomRef = useRef();
-  const userRef = useRef();
+  // const roomRef = useRef();
+  // const userRef = useRef();
+
+  const roomref = useRef()
+  const userref = useRef()
+
   const [err, setErr] = useState(false);
   const [errMsg, setErrMsg] = useState('');
   const { Header, Footer, Sider, Content } = Layout;
@@ -34,13 +38,15 @@ const Main = (props) => {
 
   useEffect(() => {
 
+    console.log("The main component")
+
     socket.on('FE-error-user-exist', ({ error }) => {
       if (!error) {
-        const roomName = roomRef.current.value;
-        const userName = userRef.current.value;
+        const room = roomref.current;
+        const user = userref.current;
 
-        sessionStorage.setItem('user', userName);
-        props.history.push(`/jam/${roomName}`);
+        sessionStorage.setItem('user', user);
+        props.history.push(`/jam/${room}`);
       } else {
         setErr(error);
         setErrMsg('User name already exist');
@@ -49,19 +55,19 @@ const Main = (props) => {
   }, [props.history]);
 
   function clickJoin() {
-    const roomName = roomRef.current.value;
-    const userName = userRef.current.value;
-    console.log(roomName);
-    if (!roomName || !userName) {
+    const room = roomref.current;
+    const user = userref.current;
+    if (!room || !user) {
       setErr(true);
       setErrMsg('Enter Room Name or User Name');
     } else {
-      socket.emit('BE-check-user', { roomId: roomName, userName });
+      socket.emit('BE-check-user', { roomId: room, user });
     }
   }
 
   const onFinish = values => {
-    console.log(values);
+    roomref.current = values.roomName
+    userref.current = values.userName
     clickJoin()
   };
 
@@ -148,10 +154,12 @@ const Main = (props) => {
           <div className='banner'>
           <Form {...layout} form={form} name="control-hooks" onFinish={onFinish} >
             <Form.Item name="roomName" label={<label style={{ color: "white" }}>Room Name</label>} rules={[{ required: true }]} style={{color:'red'}}>
-              <Input id="roomName" ref={roomRef} />
+              {/* <Input id="roomName" type="text" ref={roomRef} /> */}
+              <Input id="roomName" type="text"/>
             </Form.Item>
             <Form.Item name="userName" label={<label style={{ color: "white" }}>Username</label>} rules={[{ required: true }]}>
-              <Input id="userName" ref={userRef} />
+              {/* <Input id="userName" ref={userRef} /> */}
+              <Input id="userName"/>
             </Form.Item>
             {/* <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
               <Select

@@ -32,6 +32,8 @@ const Meet = (props) => {
 
 
   useEffect(() => {
+
+    console.log("The Meet component get rendered")
     // Get Video Devices
     navigator.mediaDevices.enumerateDevices().then((devices) => {
       const filtered = devices.filter((device) => device.kind === 'videoinput');
@@ -208,6 +210,7 @@ const Meet = (props) => {
   }
 
   function writeUserName(userName, index) {
+    console.log("userName",userName)
     if (userVideoAudio.hasOwnProperty(userName)) {
       if (!userVideoAudio[userName].video) {
         return <UserName key={userName}>{userName}</UserName>;
@@ -430,10 +433,7 @@ const Meet = (props) => {
                 <Badge.Ribbon text={peer?.userName} placement="start" color="blue">
                 <VideoCard key={index} peer={peer} number={arr.length} />
                 </Badge.Ribbon>
-            </Col>
-            
-            
-            
+            </Col>     
       )}
       
     </Row>
