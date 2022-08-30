@@ -417,7 +417,7 @@ const Meet = (props) => {
           ref={userVideoRef}
           muted
           autoPlay
-          playInline
+          // playInline
         ></video>
         </Badge.Ribbon>
       </Col>

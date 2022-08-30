@@ -17,6 +17,34 @@
     /* padding: 10px; */
   }
 
+.Bar {
+  width: 67px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 46px;
+  font-size: medium;
+  text-align: center;
+}
+.BarNumber {
+  min-height: 20px;
+  margin-right: 4px;
+  min-width: 63px;
+  /* letter-spacing: 2.4px; */
+  line-height: 20px;
+  /* white-space: nowrap; */
+}
+
+.BarText {
+  min-height: 19px;
+  margin-top: 7px;
+  /* margin-right: 8px; */
+  min-width: 23px;
+  /* font-weight: 400; */
+  /* font-size: xx-small; */
+  color: rgba(255,199, 0, 1);
+}
+
 .CameraButton {
 
     position: absolute;

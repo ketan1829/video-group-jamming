@@ -48,10 +48,11 @@ const Main = (props) => {
     });
   }, [props.history]);
 
-  function clickJoin() {
-    const roomName = roomRef.current.value;
-    const userName = userRef.current.value;
-    console.log(roomName);
+  function clickJoin(values ) {
+    // const roomName = roomRef.current.value;
+    // const userName = userRef.current.value;
+    const { roomName, userName } = values
+    console.log(roomName, userName);
     if (!roomName || !userName) {
       setErr(true);
       setErrMsg('Enter Room Name or User Name');
@@ -62,7 +63,7 @@ const Main = (props) => {
 
   const onFinish = values => {
     console.log(values);
-    clickJoin()
+    clickJoin(values)
   };
 
   const onReset = () => {
@@ -178,7 +179,7 @@ const Main = (props) => {
             </Form.Item>
             <Form.Item {...tailLayout}>
               <Space direction='horizontal'>
-              <Button className="mr-2" type="primary" htmlType="submit">
+              <Button className="mr-2" type="primary" htmlType="submit" onClick={clickJoin}>
                 Create Room
               </Button>
               <Button className="mr-2" htmlType="button" onClick={onReset}>
