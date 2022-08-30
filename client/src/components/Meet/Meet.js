@@ -125,6 +125,10 @@ const Meet = (props) => {
           });
           peersRef.current = peersRef.current.filter(({ peerID }) => peerID !== userId );
         });
+
+        socket.on('jam-end',()=>{
+          window.location.href = '/';
+        })
       });
 
     socket.on('FE-toggle-camera', ({ userId, switchTarget }) => {
@@ -227,7 +231,11 @@ const Meet = (props) => {
   // BackButton
   const goToBack = (e) => {
     e.preventDefault();
-    socket.emit('BE-leave-room', { roomId, leaver: currentUser });
+    if(sessionStorage.getItem('isRoomCreator')){
+      socket.emit('jam-end-by-creator',{roomId})
+    }else{
+      socket.emit('BE-leave-room', { roomId, leaver: currentUser });
+    }
     sessionStorage.removeItem('user');
     window.location.href = '/';
   };

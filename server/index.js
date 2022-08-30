@@ -37,6 +37,9 @@ io.on('connection', (socket) => {
 
   socket.on('BE-check-user', ({ roomId, userName }) => {
     let error = false;
+    console.log("##########:",socket.rooms)
+    const isRoomCreator = !socket.rooms
+    console.log(isRoomCreator)
 
     io.sockets.in(roomId).clients((err, clients) => {
       console.log("clients", clients)
@@ -45,7 +48,7 @@ io.on('connection', (socket) => {
           error = true;
         }
       });
-      socket.emit('FE-error-user-exist', { error });
+      socket.emit('FE-error-user-exist', { error ,isRoomCreator});
     });
   });
 
@@ -112,6 +115,11 @@ io.on('connection', (socket) => {
       .to(roomId)
       .emit('FE-toggle-camera', { userId: socket.id, switchTarget });
   });
+
+  socket.on('jam-end-by-creator',({roomId})=>{
+
+    socket.broadcast.to(roomId).emit('jam-end');
+  })
 });
 
 http.listen(PORT, () => {

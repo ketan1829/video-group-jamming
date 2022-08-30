@@ -40,12 +40,13 @@ const Main = (props) => {
 
     console.log("The main component")
 
-    socket.on('FE-error-user-exist', ({ error }) => {
+    socket.on('FE-error-user-exist', ({ error,isRoomCreator }) => {
       if (!error) {
         const room = roomref.current;
         const user = userref.current;
 
         sessionStorage.setItem('user', user);
+        sessionStorage.setItem('isRoomCreator', isRoomCreator);
         props.history.push(`/jam/${room}`);
       } else {
         setErr(error);
@@ -187,7 +188,7 @@ const Main = (props) => {
             <Form.Item {...tailLayout}>
               <Space direction='horizontal'>
               <Button className="mr-2" type="primary" htmlType="submit">
-                Create Room
+                Join Room
               </Button>
               <Button className="mr-2" htmlType="button" onClick={onReset}>
                 Reset
