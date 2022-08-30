@@ -22,15 +22,47 @@ const Room = (props) => {
   const userStream = useRef();
   const roomId = props.match.params.roomId;
 
+  // nc
+  const [audioDevices, setAudioDevices] = useState([]);
+  const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState(0);
+  const [showAudioDevices, setShowAudioDevices] = useState(false);
+
+
   useEffect(() => {
     // Get Video Devices
     navigator.mediaDevices.enumerateDevices().then((devices) => {
       const filtered = devices.filter((device) => device.kind === 'videoinput');
       setVideoDevices(filtered);
+
+      // nc
+      const audioDevices = devices.filter((device) => device.kind === 'audioinput');
+      setAudioDevices(audioDevices)
+      setSelectedAudioDeviceId(audioDevices[0].deviceId)
     });
+
 
     // Set Back Button Event
     window.addEventListener('popstate', goToBack);
+
+
+    navigator.mediaDevices.ondevicechange = (event) => {
+      setSelectedAudioDeviceId(0)
+      navigator.mediaDevices.enumerateDevices().then((devices) => {
+        const audioDevices = devices.filter((device) => device.kind === 'audioinput');
+        let selectedAudioDeviceisInList = true;
+        audioDevices.map((device)=>{
+          if(device.deviceId !== selectedAudioDeviceId){
+            selectedAudioDeviceisInList = false
+          }else{
+            selectedAudioDeviceisInList = true
+          }
+        });
+        if(!selectedAudioDeviceisInList) setSelectedAudioDeviceId(0)
+        setAudioDevices(audioDevices);
+        const filtered = devices.filter((device) => device.kind === 'videoinput');
+        setVideoDevices(filtered);
+      });
+    };
 
     // Connect Camera & Mic
     navigator.mediaDevices
@@ -139,6 +171,15 @@ const Room = (props) => {
     // eslint-disable-next-line
   }, []);
 
+  function audioQaulityChange(roomId,audioData) {
+    socket.emit('My-AudioQuality-Change',audioData)
+  }
+  // stats
+  function netQaulityChange(roomId,pingData) {
+    socket.emit('My-Ping-Change',pingData)
+
+  }
+
   function createPeer(userId, caller, stream) {
     const peer = new Peer({
       initiator: true,
@@ -158,6 +199,28 @@ const Room = (props) => {
     });
 
     return peer;
+  }
+
+  function removePeer(userId){
+    // const peerIdx = findPeer(userId);
+    // peerIdx.peer.destroy();
+    setPeers((users) => {
+      users = users.filter((user) => user.peerID !== userId);
+      return [...users];
+    });
+    peersRef.current = peersRef.current.filter(({ peerID }) => peerID !== userId );
+  }
+
+  function peerLeave(userId){
+    const peerIdx = findPeer(userId);
+    if(peerIdx){
+      peerIdx.peer.destroy();
+      setPeers((users) => {
+        users = users.filter((user) => user.peerID !== peerIdx.peer.peerID);
+        return [...users];
+      }); 
+    }
+    peersRef.current = peersRef.current.filter(({ peerID }) => peerID !== userId );
   }
 
   function addPeer(incomingSignal, callerId, stream) {
@@ -311,9 +374,9 @@ const Room = (props) => {
   };
 
   const clickBackground = () => {
-    if (!showVideoDevices) return;
+    if(showVideoDevices) setShowVideoDevices(false);
 
-    setShowVideoDevices(false);
+    if (showAudioDevices) setShowAudioDevices(false);
   };
 
   const clickCameraDevice = (event) => {
@@ -345,8 +408,42 @@ const Room = (props) => {
   };
 
 
-  console.log("PEERS", peers)
+  // nc
+  const clickAudioDevice = (event) => {
+    if (event && event.target && event.target.dataset && event.target.dataset.value) {
+      const deviceId = event.target.dataset.value;
+      setSelectedAudioDeviceId(deviceId)
+      const enabledAudio = userVideoRef.current.srcObject.getAudioTracks()[0].enabled;
 
+      navigator.mediaDevices
+        .getUserMedia({audio: { deviceId,enabledAudio }})
+        .then((stream) => {
+          
+          const newStreamTrack = stream.getTracks().find((track) => track.kind === 'audio');
+          
+          const oldStreamTrack = userStream.current
+            .getTracks()
+            .find((track) => track.kind === 'audio');
+
+          userStream.current.removeTrack(oldStreamTrack);
+          userStream.current.addTrack(newStreamTrack);
+          
+
+          peersRef.current.forEach(({ peer }) => {
+            // replaceTrack (oldTrack, newTrack, oldStream);
+            peer.replaceTrack(
+              oldStreamTrack,
+              newStreamTrack,
+              userStream.current
+            );
+            
+          });
+        })
+        .catch((error)=>{
+          console.log(error)
+        });
+    }
+  };
   return (
     <RoomContainer onClick={clickBackground}>
       <VideoAndBarContainer>
@@ -375,6 +472,7 @@ const Room = (props) => {
           clickScreenSharing={clickScreenSharing}
           clickChat={clickChat}
           clickCameraDevice={clickCameraDevice}
+          clickAudioDevice={clickAudioDevice}// nc
           goToBack={goToBack}
           toggleCameraAudio={toggleCameraAudio}
           userVideoAudio={userVideoAudio['localUser']}
@@ -382,6 +480,10 @@ const Room = (props) => {
           videoDevices={videoDevices}
           showVideoDevices={showVideoDevices}
           setShowVideoDevices={setShowVideoDevices}
+          selectedAudioDeviceId={selectedAudioDeviceId}// nc
+          audioDevices={audioDevices}// nc
+          showAudioDevices={showAudioDevices}// nc
+          setShowAudioDevices={setShowAudioDevices}// nc
         />
       </VideoAndBarContainer>
       <Chat display={displayChat} roomId={roomId} />

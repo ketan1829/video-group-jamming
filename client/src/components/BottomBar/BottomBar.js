@@ -12,20 +12,33 @@ import './BottomBar.css'
 const BottomBar = ({
   clickChat,
   clickCameraDevice,
+  clickAudioDevice,//nc
   goToBack,
   toggleCameraAudio,
   userVideoAudio,
   clickScreenSharing,
   screenShare,
   videoDevices,
+  audioDevices,//nc
   showVideoDevices,
-  setShowVideoDevices
+  showAudioDevices,//nc
+  selectedAudioDeviceId,//nc
+  setShowVideoDevices,
+  setShowAudioDevices //nc
 }) => {
   const handleToggle = useCallback(
     (e) => {
       setShowVideoDevices((state) => !state);
     },
     [setShowVideoDevices]
+  );
+
+  // nc
+  const handleAudioToggle = useCallback(
+    (e) => {
+      setShowAudioDevices((state) => !state);
+    },
+    [setShowAudioDevices]
   );
 
   const [isActive, setIsActive] = useState(false);
@@ -64,6 +77,34 @@ const BottomBar = ({
           <Button ghost onClick={()=>toggleCameraAudio('audio')} className='btn active' >
             <AudioOutlined />
           </Button>
+
+        {/* nc => */}
+        {/* For Audio */}
+        {/* <CameraButton onClick={toggleCameraAudio} data-switch='audio'>
+          <div>
+            {userVideoAudio.audio ? (
+              <FaIcon className='fas fa-microphone'></FaIcon>
+            ) : (
+              <FaIcon className='fas fa-microphone-slash'></FaIcon>
+            )}
+          </div>
+          Audio
+        </CameraButton>
+        {showAudioDevices && (
+          <SwitchAudioList>
+            {audioDevices.length > 0 &&
+              audioDevices.map((device) => {
+                return selectedAudioDeviceId === device.deviceId? 
+                <div style={{backgroundColor:'darkblue'}} key={device.deviceId} onClick={clickAudioDevice} data-value={device.deviceId} >{device.label}</div>
+                :<div key={device.deviceId} onClick={clickAudioDevice} data-value={device.deviceId} >{device.label}</div>;
+              })}
+            <div>Switch Audio</div>
+          </SwitchAudioList>
+        )}
+        <SwitchMenuAudio onClick={handleAudioToggle}>
+          <i className='fas fa-angle-up'></i>
+        </SwitchMenuAudio> */}
+        {/* <= */}
           <Badge size="small" count={<VideoCameraOutlined />}> 
           
           <Button ghost icon={<VideoCameraOutlined />} onClick={()=>{toggleCameraAudio('video');}} size="middle"  />
