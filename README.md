@@ -1,8 +1,8 @@
-# Video-Group-Meeting
+# Video-Group-Jamming
 
-Videe-Group-Meeting is a simple video chat application for multi-users based on React, Node Express and WebRTC.
+Videe-Group-Jamming is a simple video jam application for multi-users based on React, Node Express and WebRTC.
 
-This project is **deployed** at: https://video-group-meeting.herokuapp.com/
+This project is **deployed** locally
 
 **Technologies Used**
 
