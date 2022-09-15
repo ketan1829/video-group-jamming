@@ -6,6 +6,7 @@ import TweenOne from 'rc-tween-one'
 
 import './Main.css'
 import 'antd/dist/antd.css';
+import '../../index.css'
 
 import socket from '../../socket';
 
@@ -36,8 +37,8 @@ const Main = (props) => {
 
     socket.on('FE-error-user-exist', ({ error }) => {
       if (!error) {
-        const roomName = roomRef.current.value;
-        const userName = userRef.current.value;
+        const roomName = roomRef.current;
+        const userName = userRef.current;
 
         sessionStorage.setItem('user', userName);
         props.history.push(`/jam/${roomName}`);
@@ -62,7 +63,8 @@ const Main = (props) => {
   }
 
   const onFinish = values => {
-    console.log(values);
+    roomRef.current = values.roomName
+    userRef.current = values.userName
     clickJoin(values)
   };
 
@@ -149,10 +151,10 @@ const Main = (props) => {
           <div className='banner'>
           <Form {...layout} form={form} name="control-hooks" onFinish={onFinish} >
             <Form.Item name="roomName" label={<label style={{ color: "white" }}>Room Name</label>} rules={[{ required: true }]} style={{color:'red'}}>
-              <Input id="roomName" ref={roomRef} />
+              <Input id="roomName"/>
             </Form.Item>
             <Form.Item name="userName" label={<label style={{ color: "white" }}>Username</label>} rules={[{ required: true }]}>
-              <Input id="userName" ref={userRef} />
+              <Input id="userName"/>
             </Form.Item>
             {/* <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
               <Select
@@ -179,13 +181,13 @@ const Main = (props) => {
             </Form.Item>
             <Form.Item {...tailLayout}>
               <Space direction='horizontal'>
-              <Button className="mr-2" type="primary" htmlType="submit" onClick={clickJoin}>
+              <Button className="mr-2" style={{backgroundColor:'#ffc701', color:'#333'}} type="primary" htmlType="submit" onClick={clickJoin}>
                 Create Room
               </Button>
               <Button className="mr-2" htmlType="button" onClick={onReset}>
                 Reset
               </Button>
-              <Button className="mr-2" type="link" htmlType="button" onClick={onFill}>
+              <Button className="bg-primary border-primary" type="link" htmlType="button" style={{color:'#ffc701'}} onClick={onFill}>
                 Fill form
               </Button>
               </Space>

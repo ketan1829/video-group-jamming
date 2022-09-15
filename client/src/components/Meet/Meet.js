@@ -3,6 +3,10 @@ import Peer from 'simple-peer';
 import styled from 'styled-components';
 import { Col, Divider, Row, Card, List, Badge, Breadcrumb, Layout, Menu } from 'antd';
 
+import {WebRTCStats} from '@peermetrics/webrtc-stats'
+
+
+
 import 'antd/dist/antd.css';
 import './Meet.css'
 
@@ -27,11 +31,23 @@ const Meet = (props) => {
   const userStream = useRef();
   const roomId = props.match.params.roomId;
 
+  const [report, setReport] = useState([{ timestamp: 1662552000523.914 },])
+  const [time, setTime] = useState(Date.now());
+
+  let webrtcStats = new WebRTCStats({
+    getStatsInterval: 5000
+  })
+
 
   const { Header, Content, Footer } = Layout;
 
 
   useEffect(() => {
+
+    // const supported = navigator.mediaDevices.getSupportedConstraints();
+
+    // console.log("Supported", supported)
+
     // Get Video Devices
     navigator.mediaDevices.enumerateDevices().then((devices) => {
       const filtered = devices.filter((device) => device.kind === 'videoinput');
@@ -45,15 +61,18 @@ const Meet = (props) => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((stream) => {
-        userVideoRef.current.srcObject = stream;
+        userVideoRef.current.srcObject = stream; // local
         userStream.current = stream;
 
         socket.emit('BE-join-room', { roomId, userName: currentUser });
+
+
         socket.on('FE-user-join', (users) => {
           // all users
           console.log("ALL users in user-join", users)
           const peers = [];
           users.forEach(({ userId, info }) => {
+
             let { userName, video, audio } = info;
 
             if (userName !== currentUser) {
@@ -84,6 +103,7 @@ const Meet = (props) => {
         });
 
         socket.on('FE-receive-call', ({ signal, from, info }) => {
+
           let { userName, video, audio } = info;
           const peerIdx = findPeer(from);
 
@@ -121,7 +141,7 @@ const Meet = (props) => {
             users = users.filter((user) => user.peerID !== peerIdx.peer.peerID);
             return [...users];
           });
-          peersRef.current = peersRef.current.filter(({ peerID }) => peerID !== userId );
+          peersRef.current = peersRef.current.filter(({ peerID }) => peerID !== userId);
         });
       });
 
@@ -148,11 +168,63 @@ const Meet = (props) => {
     // eslint-disable-next-line
   }, []);
 
+
+  // stats
+  // useEffect(() => {
+
+
+
+  //   const peer = new Peer({
+  //     initiator: false,
+  //     trickle: false,
+  //   });
+
+  //   peer.getStats((err, reportNew) => {
+
+
+
+  //     console.log('STATS: ',reportNew)
+  //     const prevTime =  report[0].timestamp.toString().split(".")[1]
+  //     const currTime =  reportNew[0].timestamp.toString().split(".")[1]
+  //     console.log('prevTime', prevTime, "currTime", currTime)
+  //     console.log("latency",currTime-prevTime)
+  //     setReport(()=>reportNew)
+
+  //   });
+  // }, [report])
+
+
+
+  // useEffect(() => {
+  //   const interval = setInterval(() => getStatData(), 1000);
+  //   console.log("TIME", time, report)
+  //   return () => {
+  //     clearInterval(interval);
+  //   };
+  // }, []);
+
+  function getStatData() {
+    const peer = new Peer({
+      initiator: true,
+      trickle: false,
+      wrtc: { RTCPeerConnection }
+
+    });
+
+    peer.getStats((err, report) => {
+      // console.log('report', report)
+      setReport(report)
+    });
+  }
+
   function createPeer(userId, caller, stream) {
     const peer = new Peer({
       initiator: true,
       trickle: false,
       stream,
+      iceRestart: true,
+      // wrtc: { RTCPeerConnection }
+
     });
 
     peer.on('signal', (signal) => {
@@ -166,6 +238,8 @@ const Meet = (props) => {
       peer.destroy();
     });
 
+    
+
     return peer;
   }
 
@@ -174,6 +248,11 @@ const Meet = (props) => {
       initiator: false,
       trickle: false,
       stream,
+      config: {
+        'iceServers': [{
+            'urls': 'stun:stun.l.google.com:19302'
+        }]
+    },
     });
 
     peer.on('signal', (signal) => {
@@ -185,6 +264,13 @@ const Meet = (props) => {
     });
 
     peer.signal(incomingSignal);
+
+    console.log("peer OBJ:", peer)
+
+    peer.getStats((err, report) => {
+      // console.log('report', report)
+      setReport(report)
+    });
 
     return peer;
   }
@@ -230,9 +316,9 @@ const Meet = (props) => {
   };
 
   const toggleCameraAudio = (e) => {
-    
 
-    console.log("EVENT",e)
+
+    console.log("EVENT", e)
 
     const target = e // .target.getAttribute('data-switch');
 
@@ -358,27 +444,61 @@ const Meet = (props) => {
   };
 
 
-  console.log("PEERS", peers)
+  // console.log("PEERS", peers, time, report)
 
-  const navItems = [{key:1,label:"Home"},{key:2,label:"Jam"}]
+
+  setInterval(() => {
+
+    // const peer = new Peer({
+    //   initiator: false,
+    //   trickle: false,
+    // });
+
+
+    // console.log("PEERS INT", peers)
+
+    
+    if(peers.length){
+    peers[0].getStats((err, stats) => {
+      let statsOutput = "";
+      stats.forEach((report) => {
+      if(report.kind==="video" & report.type==="remote-inbound-rtp"){
+      statsOutput += `<h2>Report: ${report.type}</h2>\n<strong>ID:</strong> ${report.id}<br>\n` +
+          `<strong>Timestamp:</strong> ${report.timestamp}<br>\n`;
+        // console.log("Type", report.type, "report.timestamp", report.timestamp)
+      console.log("report", report)
+      console.log("Audio Round Trip Time (or Latency): ", report.roundTripTime*1000)
+
+      }
+      });
+    
+      // console.log("statsOutput", statsOutput)
+      // document.querySelector(".stats-box").innerHTML = statsOutput;
+
+    });
+  }
+  }, 5000);
+
+  const navItems = [{ key: 1, label: "Home" }, { key: 2, label: "Jam" }]
+
 
   return (
-  
+
     <>
 
-  
-    <Layout>
-    <Header className='header' style={{background: 'rgba(31,37, 58, 1)'}}>
-      <div className="logo" style={{
-        float: "left",
-        width: "130px",
-        height: "41px",
-        margin: "16px 24px 16px 0",
-        align:"centre",
-        
-        
-      }}><img src={"https://choira.io/static/media/choria.02aeae5c.svg"} alt="Choira logo" style={{paddingBottom:"50px"}} /></div>
-      {/* <Menu
+
+      <Layout>
+        <Header className='header' style={{ background: 'rgba(31,37, 58, 1)' }}>
+          <div className="logo" style={{
+            float: "left",
+            width: "130px",
+            height: "41px",
+            margin: "16px 24px 16px 0",
+            align: "centre",
+
+
+          }}><img src={"https://choira.io/static/media/choria.02aeae5c.svg"} alt="Choira logo" style={{ paddingBottom: "50px" }} /></div>
+          {/* <Menu
         theme="light"
         mode="horizontal"
         className='header'
@@ -394,70 +514,70 @@ const Meet = (props) => {
         //   };
         // })}
       /> */}
-    </Header>
+        </Header>
 
-    <Layout className="screen body">
-    <Content
-      style={{
-        padding: '40px 80px',
-        height: '1000px',
-        backgroundColor: 'rgba(31,37, 58, 1)'
-      }}
-    >
-    {/* <Divider/> */}
+        <Layout className="screen body">
+          <Content
+            style={{
+              padding: '40px 80px',
+              height: '1000px',
+              backgroundColor: 'rgba(31,37, 58, 1)'
+            }}
+          >
+            {/* <Divider/> */}
 
-    <div className='VidContainer'>
-    
-    <Row gutter={[8, 8]}>
-      <Col span={12} >
-      <Badge.Ribbon text="(Host) ♛" placement="start" color="gold">
-        <video
-          className='MyPeerContainer'
-          onClick={expandScreen}
-          ref={userVideoRef}
-          muted
-          autoPlay
-          // playInline
-        ></video>
-        </Badge.Ribbon>
-      </Col>
-      
-      {/* <Row justify="space-around"> */}
-      {peers &&
-            peers.map((peer, index, arr) => 
-            
-            <Col span={12} >
-                <Badge.Ribbon text={peer?.userName} placement="start" color="blue">
-                <VideoCard key={index} peer={peer} number={arr.length} />
-                </Badge.Ribbon>
-            </Col>
-            
-            
-            
-      )}
-      
-    </Row>
+            <div className='VidContainer'>
 
-    </div>
+              <Row gutter={[8, 8]}>
+                <Col span={12} >
+                  <Badge.Ribbon text="(Me) ♛" placement="start" color="gold">
+                    <video
+                      className='MyPeerContainer'
+                      onClick={expandScreen}
+                      ref={userVideoRef}
+                      muted
+                      autoPlay
+                    // playInline
+                    ></video>
+                  </Badge.Ribbon>
+                </Col>
 
-    <Row gutter={[8, 8]}>
-      <Col span={12} />
-      <Col span={12} />
-    </Row>
+                {/* <Row justify="space-around"> */}
+                {peers &&
+                  peers.map((peer, index, arr) =>
 
-    <BottomBar
-          clickScreenSharing={clickScreenSharing}
-          clickChat={clickChat}
-          clickCameraDevice={clickCameraDevice}
-          goToBack={goToBack}
-          toggleCameraAudio={toggleCameraAudio}
-          userVideoAudio={userVideoAudio['localUser']}
-          screenShare={screenShare}
-          videoDevices={videoDevices}
-          showVideoDevices={showVideoDevices}
-          setShowVideoDevices={setShowVideoDevices}
-        />
-    {/* <Row style={{ backgroundColor: 'gold', }}>
+                    <Col span={12} >
+                      <Badge.Ribbon text={peer?.userName} placement="start" color="blue" id="userBadge">
+                        <VideoCard key={index} peer={peer} number={arr.length} />
+                      </Badge.Ribbon>
+                    </Col>
+
+
+
+                  )}
+
+              </Row>
+
+            </div>
+
+            <Row gutter={[8, 8]}>
+              <Col span={12} />
+              <Col span={12} />
+            </Row>
+
+            <BottomBar
+              clickScreenSharing={clickScreenSharing}
+              clickChat={clickChat}
+              clickCameraDevice={clickCameraDevice}
+              goToBack={goToBack}
+              toggleCameraAudio={toggleCameraAudio}
+              userVideoAudio={userVideoAudio['localUser']}
+              screenShare={screenShare}
+              videoDevices={videoDevices}
+              showVideoDevices={showVideoDevices}
+              setShowVideoDevices={setShowVideoDevices}
+            />
+            {/* <Row style={{ backgroundColor: 'gold', }}>
         <Col flex="1 1 200px">
           <div >Video</div>
         </Col>
@@ -465,11 +585,11 @@ const Meet = (props) => {
     </Row> */}
 
 
-    </Content>
+          </Content>
 
-    </Layout>
+        </Layout>
 
-    {/* <Footer
+        {/* <Footer
       style={{
         textAlign: 'center',
       }}
@@ -477,11 +597,11 @@ const Meet = (props) => {
       Created by Choira
     </Footer> */}
 
-    </Layout>
+      </Layout>
 
     </>
 
-    
+
 
   );
 };

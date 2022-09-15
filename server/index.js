@@ -19,6 +19,7 @@ if (process.env.NODE_ENV === 'production') {
 
 // Route
 app.get('/ping', (req, res) => {
+  // console.log("PING", req)
   res
     .send({
       success: true,

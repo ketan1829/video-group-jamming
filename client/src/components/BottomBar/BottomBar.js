@@ -144,7 +144,7 @@ const BottomBar = ({
           </Space>
         </Col>
         
-        <Col span={9}><Button type='primary'>chat</Button></Col>
+        <Col span={9}><Button type='primary' style={{backgroundColor:'#ffc701', color:'#333'}}>chat</Button></Col>
         </Row>
 
 
