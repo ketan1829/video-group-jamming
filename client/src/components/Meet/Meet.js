@@ -467,6 +467,7 @@ const Meet = (props) => {
           `<strong>Timestamp:</strong> ${report.timestamp}<br>\n`;
         // console.log("Type", report.type, "report.timestamp", report.timestamp)
       console.log("report", report)
+      // setReport(report)
       console.log("Audio Round Trip Time (or Latency): ", report.roundTripTime*1000)
 
       }
@@ -547,9 +548,11 @@ const Meet = (props) => {
                   peers.map((peer, index, arr) =>
 
                     <Col span={12} >
+                      <Badge count={`RTT: ${report ? `${report.roundTripTime*1000} m/s` : 'N/A'}`} style={{color:"green", backgroundColor:"white", marginRight:50,marginTop:20}} size="small" >
                       <Badge.Ribbon text={peer?.userName} placement="start" color="blue" id="userBadge">
                         <VideoCard key={index} peer={peer} number={arr.length} />
                       </Badge.Ribbon>
+                      </Badge>
                     </Col>
 
 

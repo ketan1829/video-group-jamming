@@ -1,11 +1,16 @@
 import React, { useCallback, useState } from 'react';
-import { Button, Col, Divider, Row, Space, Badge, Card, InputNumber } from 'antd';
+import { Button, Col, Divider, Row, Space, Badge, Card, InputNumber, Dropdown, Menu, message, Modal } from 'antd';
 import Icon, {
   AudioOutlined,
   VideoCameraOutlined,
+  RightCircleOutlined,
+  AudioMutedOutlined,
   VideoCameraFilled,
   GoldOutlined,
   UsergroupAddOutlined,
+  UserOutlined,
+  UpOutlined,
+  EllipsisOutlined,
 } from '@ant-design/icons';
 
 import styled from 'styled-components';
@@ -33,9 +38,32 @@ const BottomBar = ({
   const [isActive, setIsActive] = useState(false);
   const [isActiveVid, setIsActiveVid] = useState(false);
   const [isActiveAud, setIsActiveAud] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const handleBtnClick = () => {
     setIsActive(current => !current);
+  };
+
+  const handleMenuClick = (e) => {
+    message.info('Click on menu item.');
+    console.log('click', e);
+  };
+
+  const showModal = () => {
+    setOpen(true);
+  };
+
+  const handleOk = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setOpen(false);
+    }, 3000);
+  };
+
+  const handleCancel = () => {
+    setOpen(false);
   };
 
   const MetroSvg = () => (
@@ -43,6 +71,30 @@ const BottomBar = ({
   );
 
   const MetroIcon = (props) => <Icon component={MetroSvg} {...props} />;
+
+
+  const menu = (
+    <Menu
+      onClick={handleMenuClick}
+      items={[
+        {
+          label: '1st menu item',
+          key: '1',
+          icon: <UserOutlined />,
+        },
+        {
+          label: '2nd menu item',
+          key: '2',
+          icon: <UserOutlined />,
+        },
+        {
+          label: '3rd menu item',
+          key: '3',
+          icon: <UserOutlined />,
+        },
+      ]}
+    />
+  );
 
 
   return (
@@ -101,55 +153,85 @@ const BottomBar = ({
 
         </div>
       </Col>
+
       <Col span={12}>
+
         <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} className='gutter-box' justify='end'>
-        {/* <Col className="gutter-row rightPart" span={6}>
-          <div className='col-style'>col-6</div>
-        </Col>
-        <Col className="gutter-row" span={6}>
-          <div className='col-style'>col-6</div>
-        </Col>
-        <Col className="gutter-row" span={6}>
-          <div className='col-style'>col-6</div>
-        </Col>
-        <Col className="gutter-row" span={6}>
-          <div className='col-style'>col-6</div>
-        </Col> */}
-        {/* <Col span={4}>
-          <Button ghost icon={<UsergroupAddOutlined />} size="large"/>
-        </Col> */}
-        <Col span={4}>
-          <Button type="primary" danger onClick={goToBack} >End Jam</Button>
-        </Col>
-        <Col span={6} >
-          <Space span={3}>
-          
-          <Button ghost icon={<UsergroupAddOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px'}}/>
 
-          <Badge size="small" placement="start" count={isActiveAud?"x":null}> 
-          <SwitchMenu onClick={handleToggle}>
-            <i className='fas fa-angle-up'></i>
-          </SwitchMenu>
-          <Button ghost onClick={()=>{toggleCameraAudio('audio');setIsActiveAud(!isActiveAud)}} className='btn active' >
-            <AudioOutlined />
-          </Button>
-          </Badge>
 
-          <Badge size="small" count={isActiveVid?"x":null}> 
-          <Button ghost icon={<VideoCameraOutlined />} onClick={()=>{toggleCameraAudio('video');setIsActiveVid(!isActiveVid)}} size="middle"  />
-            {/* <VideoCameraOutlined /> */}
-          {/* </Button> */}
-          </Badge>
-          {/* <Button type='primary' ml-4>chat</Button> */}
-          </Space>
-        </Col>
-        
-        <Col span={9}><Button type='primary' style={{backgroundColor:'#ffc701', color:'#333'}}>chat</Button></Col>
+          <Col span={6}>
+            <Button type="primary" danger onClick={goToBack} >End Jam</Button>
+          </Col>
+          <Col span={10} >
+            <Space span={2}>
+            
+            <Button ghost icon={<RightCircleOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px'}}/>
+
+            <Button ghost icon={<UsergroupAddOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px'}} onClick={showModal}/>
+
+            
+            <Modal
+              open={open}
+              title="Invite Participants"
+              onOk={handleOk}
+              onCancel={handleCancel}
+              footer={[
+                <Button key="back" onClick={handleCancel}>
+                  Return
+                </Button>,
+                // <Button key="submit" type="primary" loading={loading} onClick={handleOk}>
+                //   Submit
+                // </Button>
+                ,
+                <Button
+                  // key="link"
+                  // href="https://google.com"
+                  type="primary"
+                  loading={loading}
+                  onClick={handleOk}
+                >
+                  Copy Link
+                </Button>,
+              ]}
+              >
+              <p>Some contents...</p>
+            </Modal>
+
+
+            {/* <Badge size="small" placement="start" count={isActiveAud?"x":null}>  */}
+            {/* <SwitchMenu onClick={handleToggle}>
+              <i className='fas fa-angle-up'></i>
+            </SwitchMenu> */}
+            <Button ghost onClick={()=>{toggleCameraAudio('audio');setIsActiveAud(!isActiveAud)}} className='btn active' >
+              {/* <Button ghost> */}
+              <Space span={2}>
+              {!isActiveAud ? <AudioOutlined />:<AudioMutedOutlined />}
+            <Dropdown overlay={menu} placement="topLeft" arrow trigger={['click']} >
+              <EllipsisOutlined rotate='90' />
+            </Dropdown>
+              </Space>
+              {/* </Button> */}
+            </Button>
+            {/* </Badge> */}
+
+            <Badge size="small" count={isActiveVid?"x":null}> 
+            <Button ghost icon={<VideoCameraOutlined />} onClick={()=>{toggleCameraAudio('video');setIsActiveVid(!isActiveVid)}} size="middle"  />
+              {/* <VideoCameraOutlined /> */}
+            {/* </Button> */}
+            </Badge>
+            {/* <Button type='primary' ml-4>chat</Button> */}
+            </Space>
+          </Col>
+          <Col span={6}>
+            <Button type='primary' style={{backgroundColor:'#ffc701', color:'#333'}}>chatt</Button>
+          </Col>
+
+
         </Row>
 
 
-
       </Col>
+
     </Row>
     
   );
