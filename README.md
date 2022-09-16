@@ -27,7 +27,7 @@ This project is **deployed** locally
 
 ## Installation
 ### Clone
-- Clone this repo to your local machine using `https://github.com/Hyunse/video-group-meeting.git`
+- Clone this repo to your local machine using
 
 ### Setup
 **Client**
