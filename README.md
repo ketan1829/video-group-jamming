@@ -11,9 +11,9 @@ This project is **deployed** locally
 - WebRTC
 - Socket.io
 - [Syled-components](https://styled-components.com/)
+- Ant Design
 - [Simple-peer](https://github.com/feross/simple-peer)
 
-**Contributors:** [Hyunse Kim](https://github.com/Hyunse)
 
 ---
 
@@ -21,6 +21,7 @@ This project is **deployed** locally
 
 - Join a room
 - Video Streaming
+- Metronome
 - Text chat
 - Mute Video/Audio
 - Screen Sharing
