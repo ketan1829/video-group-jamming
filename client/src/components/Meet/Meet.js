@@ -7,7 +7,7 @@ import {WebRTCStats} from '@peermetrics/webrtc-stats'
 
 
 
-import 'antd/dist/antd.css';
+import 'antd/dist/antd.min.css';
 import './Meet.css'
 
 import socket from '../../socket';

@@ -5,7 +5,7 @@ import BannerAnim, { Element } from 'rc-banner-anim';
 import TweenOne from 'rc-tween-one'
 
 import './Main.css'
-import 'antd/dist/antd.css';
+import 'antd/dist/antd.min.css';
 import '../../index.css'
 
 import socket from '../../socket';

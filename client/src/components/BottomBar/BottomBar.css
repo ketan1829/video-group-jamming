@@ -76,3 +76,13 @@
   background-color: rgb(0, 0, 0);
   color:white;
 }
+
+.site-button-ghost-wrapper {
+  padding: 26px 16px 16px 15px;
+  /* background: rgb(190, 200, 200); */
+}
+
+/* .gutter-box {
+  padding: 8px 0;
+  background: #00a0e9;
+} */
