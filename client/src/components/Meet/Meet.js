@@ -34,6 +34,14 @@ const Meet = (props) => {
   const [report, setReport] = useState([{ timestamp: 1662552000523.914 },])
   const [time, setTime] = useState(Date.now());
 
+
+  // nc
+
+  const [audioDevices, setAudioDevices] = useState([]);
+  const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState(0);
+  const [showAudioDevices, setShowAudioDevices] = useState(false);
+
+
   let webrtcStats = new WebRTCStats({
     getStatsInterval: 5000
   })
@@ -43,6 +51,53 @@ const Meet = (props) => {
 
 
   useEffect(() => {
+
+
+    // nc
+    const getSetDevices = () => {
+      navigator.mediaDevices.enumerateDevices().then((devices) => {
+
+        // nc
+        const audioDevices = devices.filter((device) =>{
+
+          if(device.kind === 'audioinput'){
+            return true
+          }
+        }
+        );
+        setAudioDevices(audioDevices)
+        
+        //
+        setSelectedAudioDeviceId(audioDevices[0].deviceId)
+  
+        console.table(audioDevices)
+  
+        const filtered = devices.filter((device) => device.kind === 'videoinput');
+        setVideoDevices(filtered);
+      });
+    }
+    navigator.mediaDevices.ondevicechange = (event) => {
+      setSelectedAudioDeviceId(0)
+      navigator.mediaDevices.enumerateDevices().then((devices) => {
+        const audioDevices = devices.filter((device) => device.kind === 'audioinput');
+        let selectedAudioDeviceisInList = true;
+        audioDevices.map((device)=>{
+          if(device.deviceId !== selectedAudioDeviceId){
+            selectedAudioDeviceisInList = false
+          }else{
+            selectedAudioDeviceisInList = true
+          }
+        });
+        if(!selectedAudioDeviceisInList) setSelectedAudioDeviceId(0)
+        setAudioDevices(audioDevices);
+        const filtered = devices.filter((device) => device.kind === 'videoinput');
+        setVideoDevices(filtered);
+      });
+    };
+
+    // Get Video-Audio Devices
+
+
 
     // const supported = navigator.mediaDevices.getSupportedConstraints();
 
@@ -168,6 +223,37 @@ const Meet = (props) => {
     // eslint-disable-next-line
   }, []);
 
+
+  // nc 
+  // stats
+  function audioQaulityChange(roomId,audioData) {
+    socket.emit('My-AudioQuality-Change',audioData)
+  }
+  // nc stats
+  function netQaulityChange(roomId,pingData) {
+    socket.emit('My-Ping-Change',pingData)
+
+  }
+  function removePeer(userId){
+    // const peerIdx = findPeer(userId);
+    // peerIdx.peer.destroy();
+    setPeers((users) => {
+      users = users.filter((user) => user.peerID !== userId);
+      return [...users];
+    });
+    peersRef.current = peersRef.current.filter(({ peerID }) => peerID !== userId );
+  }
+  function peerLeave(userId){
+    const peerIdx = findPeer(userId);
+    if(peerIdx){
+      peerIdx.peer.destroy();
+      setPeers((users) => {
+        users = users.filter((user) => user.peerID !== peerIdx.peer.peerID);
+        return [...users];
+      }); 
+    }
+    peersRef.current = peersRef.current.filter(({ peerID }) => peerID !== userId );
+  }
 
   // stats
   // useEffect(() => {
@@ -481,6 +567,52 @@ const Meet = (props) => {
 
   const navItems = [{ key: 1, label: "Home" }, { key: 2, label: "Jam" }]
 
+
+  // nc
+
+   // nc
+   const clickAudioDevice = (event) => {
+    setUserVideoAudio((preList) => {
+      let videoSwitch = preList['localUser'].video;
+      let audioSwitch = preList['localUser'].audio;
+      return {
+      ...preList,
+      localUser: { video: videoSwitch, audio: true },};
+    })
+    if (event && event.target && event.target.dataset && event.target.dataset.value) {
+      const deviceId = event.target.dataset.value;
+      setSelectedAudioDeviceId(deviceId)
+      const enabledAudio = userVideoRef.current.srcObject.getAudioTracks()[0].enabled;
+
+      navigator.mediaDevices
+        .getUserMedia({audio: { deviceId,enabledAudio }})
+        .then((stream) => {
+          
+          const newStreamTrack = stream.getTracks().find((track) => track.kind === 'audio');
+          
+          const oldStreamTrack = userStream.current
+            .getTracks()
+            .find((track) => track.kind === 'audio');
+
+          userStream.current.removeTrack(oldStreamTrack);
+          userStream.current.addTrack(newStreamTrack);
+          
+
+          peersRef.current.forEach(({ peer }) => {
+            // replaceTrack (oldTrack, newTrack, oldStream);
+            peer.replaceTrack(
+              oldStreamTrack,
+              newStreamTrack,
+              userStream.current
+            );
+            
+          });
+        })
+        .catch((error)=>{
+          console.log(error)
+        });
+    }
+  };
 
   return (
 
