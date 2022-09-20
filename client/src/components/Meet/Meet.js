@@ -42,17 +42,63 @@ const Meet = (props) => {
   const { Header, Content, Footer } = Layout;
 
 
+    // nc
+    const [audioDevices, setAudioDevices] = useState([]);
+    const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState(0);
+    const [showAudioDevices, setShowAudioDevices] = useState(false);
+
+
   useEffect(() => {
+
+    // nc
+    // Get Video-Audio Devices
+    
+    const getSetDevices = () => {
+      navigator.mediaDevices.enumerateDevices().then((devices) => {
+        // nc
+        const uniqueDevices = [];
+        const audioDevices = devices.filter((device) =>{
+          if(device.kind === 'audioinput'){
+            return true
+          }
+        }
+        );
+        setAudioDevices(audioDevices)
+        setSelectedAudioDeviceId(audioDevices[0].deviceId)
+        console.table(audioDevices)
+        const newVideoDevices = devices.filter((device) => device.kind === 'videoinput');
+        setVideoDevices(newVideoDevices);
+      });
+    }
+    // nc
+    navigator.mediaDevices.ondevicechange = (event) => {
+      // setSelectedAudioDeviceId(0)
+      navigator.mediaDevices.enumerateDevices().then((devices) => {
+        const audioDevices = devices.filter((device) => device.kind === 'audioinput');
+        let selectedAudioDevicesInList = true;
+        audioDevices.map((device)=>{
+          if(device.deviceId !== selectedAudioDeviceId){
+            selectedAudioDevicesInList = false
+          }else{
+            selectedAudioDevicesInList = true
+          }
+        });
+        if(!selectedAudioDevicesInList) setSelectedAudioDeviceId(0)
+        setAudioDevices(audioDevices);
+        const newVideoDevices = devices.filter((device) => device.kind === 'videoinput');
+        setVideoDevices(newVideoDevices);
+      });
+    };
 
     // const supported = navigator.mediaDevices.getSupportedConstraints();
 
     // console.log("Supported", supported)
 
-    // Get Video Devices
-    navigator.mediaDevices.enumerateDevices().then((devices) => {
-      const filtered = devices.filter((device) => device.kind === 'videoinput');
-      setVideoDevices(filtered);
-    });
+    // // Get Video Devices
+    // navigator.mediaDevices.enumerateDevices().then((devices) => {
+    //   const filtered = devices.filter((device) => device.kind === 'videoinput');
+    //   setVideoDevices(filtered);
+    // });
 
     // Set Back Button Event
     window.addEventListener('popstate', goToBack);
@@ -61,6 +107,7 @@ const Meet = (props) => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((stream) => {
+        getSetDevices()
         userVideoRef.current.srcObject = stream; // local
         userStream.current = stream;
 
@@ -447,47 +494,81 @@ const Meet = (props) => {
   // console.log("PEERS", peers, time, report)
 
 
-  setInterval(() => {
+  // setInterval(() => {
 
-    // const peer = new Peer({
-    //   initiator: false,
-    //   trickle: false,
-    // });
+  //   // const peer = new Peer({
+  //   //   initiator: false,
+  //   //   trickle: false,
+  //   // });
 
 
-    // console.log("PEERS INT", peers)
+  //   // console.log("PEERS INT", peers)
 
     
-    if(peers.length){
-    peers[0].getStats((err, stats) => {
-      let statsOutput = "";
-      stats.forEach((report) => {
-      if(report.kind==="video" & report.type==="remote-inbound-rtp"){
-      statsOutput += `<h2>Report: ${report.type}</h2>\n<strong>ID:</strong> ${report.id}<br>\n` +
-          `<strong>Timestamp:</strong> ${report.timestamp}<br>\n`;
-        // console.log("Type", report.type, "report.timestamp", report.timestamp)
-      console.log("report", report)
-      // setReport(report)
-      console.log("Audio Round Trip Time (or Latency): ", report.roundTripTime*1000)
+  //   if(peers.length){
+  //   peers[0].getStats((err, stats) => {
+  //     let statsOutput = "";
+  //     stats.forEach((report) => {
+  //     if(report.kind==="video" & report.type==="remote-inbound-rtp"){
+  //     statsOutput += `<h2>Report: ${report.type}</h2>\n<strong>ID:</strong> ${report.id}<br>\n` +
+  //         `<strong>Timestamp:</strong> ${report.timestamp}<br>\n`;
+  //       // console.log("Type", report.type, "report.timestamp", report.timestamp)
+  //     console.log("report", report)
+  //     // setReport(report)
+  //     console.log("Audio Round Trip Time (or Latency): ", report.roundTripTime*1000)
 
-      }
-      });
+  //     }
+  //     });
     
-      // console.log("statsOutput", statsOutput)
-      // document.querySelector(".stats-box").innerHTML = statsOutput;
+  //     // console.log("statsOutput", statsOutput)
+  //     // document.querySelector(".stats-box").innerHTML = statsOutput;
 
-    });
-  }
-  }, 5000);
+  //   });
+  // }
+  // }, 5000);
 
   const navItems = [{ key: 1, label: "Home" }, { key: 2, label: "Jam" }]
+
+
+  // nc
+  const switchAudioSource = (audioDeviceId) => {
+
+    setSelectedAudioDeviceId(audioDeviceId)
+    const enabledAudio = userVideoRef.current.srcObject.getAudioTracks()[0].enabled;
+
+    navigator.mediaDevices
+    .getUserMedia({audio: { audioDeviceId,enabledAudio }})
+    .then((stream) => {
+      
+      const newStreamTrack = stream.getTracks().find((track) => track.kind === 'audio');
+      
+      const oldStreamTrack = userStream.current
+        .getTracks()
+        .find((track) => track.kind === 'audio');
+
+      console.log("oldStreamTrack ",oldStreamTrack)
+
+      userStream.current.removeTrack(oldStreamTrack);
+      userStream.current.addTrack(newStreamTrack);
+    
+      peersRef.current.forEach(({ peer }) => {
+        // replaceTrack (oldTrack, newTrack, oldStream);
+        peer.replaceTrack(
+          oldStreamTrack,
+          newStreamTrack,
+          userStream.current
+        );
+        
+      });
+    }).catch((error)=>{
+      console.log(error)
+    });
+  }
 
 
   return (
 
     <>
-
-
       <Layout>
         <Header className='header' style={{ background: 'rgba(31,37, 58, 1)' }}>
           <div className="logo" style={{
@@ -547,16 +628,13 @@ const Meet = (props) => {
                 {peers &&
                   peers.map((peer, index, arr) =>
 
-                    <Col span={12} >
+                    <Col key={index} span={12} >
                       <Badge count={`RTT: ${report ? `${report.roundTripTime*1000} m/s` : 'N/A'}`} style={{color:"green", backgroundColor:"white", marginRight:50,marginTop:20}} size="small" >
                       <Badge.Ribbon text={peer?.userName} placement="start" color="blue" id="userBadge">
                         <VideoCard key={index} peer={peer} number={arr.length} />
                       </Badge.Ribbon>
                       </Badge>
                     </Col>
-
-
-
                   )}
 
               </Row>
@@ -579,6 +657,8 @@ const Meet = (props) => {
               videoDevices={videoDevices}
               showVideoDevices={showVideoDevices}
               setShowVideoDevices={setShowVideoDevices}
+              audioDevices={audioDevices}
+              switchAudioSource={switchAudioSource}
             />
             {/* <Row style={{ backgroundColor: 'gold', }}>
         <Col flex="1 1 200px">

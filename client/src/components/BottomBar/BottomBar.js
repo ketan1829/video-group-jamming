@@ -29,7 +29,9 @@ const BottomBar = ({
   screenShare,
   videoDevices,
   showVideoDevices,
-  setShowVideoDevices
+  setShowVideoDevices,
+  audioDevices,
+  switchAudioSource
 }) => {
   const handleToggle = useCallback(
     (e) => {
@@ -63,8 +65,10 @@ const BottomBar = ({
   };
 
   const handleMenuClick = (e) => {
-    message.info('Click on menu item.');
-    console.log('click', e);
+    const audioDeviceId = e.key;
+    switchAudioSource(audioDeviceId)
+    const deviceLabel = audioDevices.filter(audiodev=>{return audiodev.deviceId===audioDeviceId?true:false})[0].label
+    message.success(`Switch to "${deviceLabel}"` );
   };
 
   const showModal = () => {
@@ -90,28 +94,45 @@ const BottomBar = ({
   const MetroIcon = (props) => <Icon component={MetroSvg} {...props} />;
 
 
-  const menu = (
-    <Menu
-      onClick={handleMenuClick}
-      items={[
-        {
-          label: '1st menu item',
-          key: '1',
-          icon: <UserOutlined />,
-        },
-        {
-          label: '2nd menu item',
-          key: '2',
-          icon: <UserOutlined />,
-        },
-        {
-          label: '3rd menu item',
-          key: '3',
-          icon: <UserOutlined />,
-        },
-      ]}
-    />
-  );
+  // const menu = (
+  //   <Menu
+  //     onClick={handleMenuClick}
+  //     items={[
+  //       {
+  //         label: '1st menu item',
+  //         key: '1',
+  //         icon: <AudioOutlined />,
+  //       },
+  //       {
+  //         label: '2nd menu item',
+  //         key: '2',
+  //         icon: <AudioOutlined />,
+  //       },
+  //       {
+  //         label: '3rd menu item',
+  //         key: '3',
+  //         icon: <AudioOutlined />,
+  //       },
+  //     ]}
+  //   />
+  // );
+
+  const menu = (<Menu onClick={handleMenuClick} items={audioDevices.map(audiodevice=>{
+      return {
+        label:audiodevice.label,
+        key: audiodevice.deviceId,
+        icon: <AudioOutlined />
+      }})}/>)
+
+  // const menu = audioDevices.map(audiodevice=>{
+  //   return {
+  //             label:audiodevice.label,
+  //             key: audiodevice.deviceId,
+  //             icon: <AudioOutlined />,
+  //           }
+  // })
+
+  // console.log("menu",menu)
 
 
   // Metronome --------------------------------------------
