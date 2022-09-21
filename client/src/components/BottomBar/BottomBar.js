@@ -14,6 +14,9 @@ import Icon, {
   EllipsisOutlined,
 } from '@ant-design/icons';
 
+// import { useMetronome } from "react-metronome-hook";
+import { useMetronome } from "./Metronome";
+
 import styled from 'styled-components';
 import './BottomBar.css'
 
@@ -43,10 +46,14 @@ const BottomBar = ({
   const [isActiveAud, setIsActiveAud] = useState(false);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+
+
+  
+
   let click1 = "//daveceddia.com/freebies/react-metronome/click1.wav";
   let click2 = "//daveceddia.com/freebies/react-metronome/click2.wav";
-  click1 = new Audio(click1);
-  click2 = new Audio(click2);
+  // click1 = new Audio(click1);
+  // click2 = new Audio(click2);
   let timmer = useRef(null)
 
   const [metronomeState, setMetronomeState] = useState({
@@ -56,7 +63,15 @@ const BottomBar = ({
       beatsPerMeasure: 4
     });
 
-  const {isPlaying, bpm} = metronomeState;
+    const {
+      startMetronome,
+      stopMetronome,
+      isTicking,
+      setBpm,
+      setBeatsPerMeasure,
+      bpm,
+      beatsPerMeasure
+    } = useMetronome(metronomeState.bpm, metronomeState.beatsPerMeasure, [click1, click2]);
 
   const handleBtnClick = () => {
     setIsActive(current => !current);
@@ -118,25 +133,31 @@ const BottomBar = ({
 
   const handleMetronomeChange = (value) => {
     const bpm = value;
-    if(metronomeState.isPlaying){
-      clearInterval(timmer.current)
-      timmer.current = setInterval(playclick, (60/metronomeState.bpm)*1000)
-      setMetronomeState((prev)=>(
-        {
-          ...prev.count = 0,
-          ...prev.bpm = bpm,
-        }
-      ))
-    }else{
-      setMetronomeState({...metronomeState.bpm,bpm})
-    }
+    if(bpm>=60 || bpm<=260) setBpm(bpm)
+    // // console.log("init BPM", bpm)
+    // if(metronomeState.isPlaying){
+    //   clearInterval(timmer.current)
+    //   timmer.current = setInterval(playclick, (60/metronomeState.bpm)*1000)
+    //   setMetronomeState((prev)=>(
+    //     {
+    //       ...prev.count = 0,
+    //       ...prev.bpm = bpm,
+    //     }
+    //   ))
+    // }else{
+    //   setMetronomeState({...metronomeState.bpm,bpm})
+    //   // console.log("BPM", metronomeState.bpm)
+    // }
   }
 
 
   const playclick = () => {
-    const {count, beatsPerMeasure} = metronomeState;
 
-    console.log("Metronome",metronomeState)
+      // click1.play();
+
+    let {count, beatsPerMeasure} = metronomeState;
+    // let nxtCount = (count + 1) % metronomeState.beatsPerMeasure
+    // console.log("Metronome Count",nxtCount)
 
     if(count % beatsPerMeasure ===0) {
       click2.play();
@@ -146,29 +167,31 @@ const BottomBar = ({
     }
 
     setMetronomeState(prev=>({
-      ...prev.count = (count + 1) % metronomeState.beatsPerMeasure
+      ...prev.count = (prev.count + 1) % prev.beatsPerMeasure
     }))
-    console.log("---Metronome",metronomeState)
-
+    console.log("--- Clk Metronome",metronomeState)
 
   }
 
 
   const startstop = () => {
+
     if (metronomeState.isPlaying){
       clearInterval(timmer.current)
       setMetronomeState((prev)=>({
         ...prev.isPlaying=false
       }))
-      console.log("Timmer", timmer.current)
+      console.log("Timmer Stop", timmer.current)
     }else{
-      timmer.current = setInterval(playclick, (60/ metronomeState.bpm)/1000)
+      timmer.current = setInterval(playclick, (60/ metronomeState.bpm) * 1000)
+      console.log("current Timmer", timmer.current)
       setMetronomeState((prev)=>({
         ...prev.count = 0,
         ...prev.isPlaying = true
-      },
-      playclick
+    }
+    ,playclick()
       ))
+      // playclick()
       console.log("Timmer", timmer.current)
     }
   }
@@ -194,9 +217,11 @@ const BottomBar = ({
             <Space span={2}>
             
           {/* <GoldOutlined  style={{ fontSize: '40px', alignContent:'center'}}  /> */}
-            <Button ghost icon={<CaretRightOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px', fontSize: '40px'}} onClick={startstop}  />
+            {/* Start MetroNome */}
+            <Button ghost icon={<CaretRightOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px', fontSize: '40px'}} onClick={isTicking ? stopMetronome : startMetronome}  />
 
-            <InputNumber bordered={false}  status="warning" defaultValue={100} style={{color:'gold', width:65}} min={60} max={240} onChange={handleMetronomeChange} />
+            {/* BPM input */}
+            <InputNumber bordered={false}  status="warning" defaultValue={120} style={{color:'gold', width:65}} min={60} max={160} onChange={handleMetronomeChange} />
             {/* <Button ghost icon={<UsergroupAddOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px'}} onClick={showModal}/> */}
 
             

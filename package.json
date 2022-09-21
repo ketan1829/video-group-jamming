@@ -1,9 +1,12 @@
 {
   "scripts": {
-    "prepare-client":"cd client && npm install && npm run build",
-    "prepare-server":"cd server && npm install",
+    "prepare-client": "cd client && npm install && npm run build",
+    "prepare-server": "cd server && npm install",
     "heroku-postbuild": "npm run prepare-client && npm run prepare-server",
     "start": "cd server && npm start"
   },
-  "homepage": "https://choira.io/"
+  "homepage": "https://choira.io/",
+  "dependencies": {
+    "react-metronome-hook": "^1.0.5"
+  }
 }
