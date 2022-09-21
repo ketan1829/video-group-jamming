@@ -32,6 +32,7 @@ const Meet = (props) => {
   const roomId = props.match.params.roomId;
 
   const [report, setReport] = useState([{ timestamp: 1662552000523.914 },])
+  // const [report, setReport] = useState([])
   const [time, setTime] = useState(Date.now());
 
   let webrtcStats = new WebRTCStats({
@@ -209,6 +210,20 @@ const Meet = (props) => {
       });
     });
 
+    setInterval(() => {
+      console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",peers.length)
+      if(peers.length){
+        peers[0].getStats((err, stats) => {
+          stats.forEach((report) => {
+          if(report.kind==="video" & report.type==="remote-inbound-rtp"){
+            console.log("report",report)
+          setReport(report)
+          }
+          });
+        });
+      }
+    }, 5000);
+
     return () => {
       socket.disconnect();
     };
@@ -218,17 +233,12 @@ const Meet = (props) => {
 
   // stats
   // useEffect(() => {
-
-
-
   //   const peer = new Peer({
   //     initiator: false,
   //     trickle: false,
   //   });
 
   //   peer.getStats((err, reportNew) => {
-
-
 
   //     console.log('STATS: ',reportNew)
   //     const prevTime =  report[0].timestamp.toString().split(".")[1]
@@ -281,11 +291,10 @@ const Meet = (props) => {
         signal,
       });
     });
+
     peer.on('disconnect', () => {
       peer.destroy();
     });
-
-    
 
     return peer;
   }
@@ -315,7 +324,6 @@ const Meet = (props) => {
     console.log("peer OBJ:", peer)
 
     peer.getStats((err, report) => {
-      // console.log('report', report)
       setReport(report)
     });
 
@@ -363,7 +371,6 @@ const Meet = (props) => {
   };
 
   const toggleCameraAudio = (e) => {
-
 
     console.log("EVENT", e)
 
@@ -509,13 +516,17 @@ const Meet = (props) => {
   //   peers[0].getStats((err, stats) => {
   //     let statsOutput = "";
   //     stats.forEach((report) => {
-  //     if(report.kind==="video" & report.type==="remote-inbound-rtp"){
-  //     statsOutput += `<h2>Report: ${report.type}</h2>\n<strong>ID:</strong> ${report.id}<br>\n` +
-  //         `<strong>Timestamp:</strong> ${report.timestamp}<br>\n`;
+  //     // if(report.kind==="video" || report.kind === "audio" & report.type==="remote-inbound-rtp"){
+  //     if(report.kind==="video" || report.kind === "audio" && report.type==="remote-inbound-rtp"){
+  //     // statsOutput += `<h2>Report: ${report.type}</h2>\n<strong>ID:</strong> ${report.id}<br>\n` +
+  //     //     `<strong>Timestamp:</strong> ${report.timestamp}<br>\n`;
   //       // console.log("Type", report.type, "report.timestamp", report.timestamp)
-  //     console.log("report", report)
-  //     // setReport(report)
-  //     console.log("Audio Round Trip Time (or Latency): ", report.roundTripTime*1000)
+  //     // console.log("report", report)
+
+  //     // setReport(prereports=>[...prereports,report])
+  //     setReport(report)
+
+  //     // console.log("Audio Round Trip Time (or Latency): ", report.roundTripTime*1000)
 
   //     }
   //     });
@@ -561,6 +572,15 @@ const Meet = (props) => {
       console.log(error)
     });
   }
+
+  // nc 
+
+  // useEffect(() => {
+    
+  //   console.log("Reports chnaged : ",report)
+  //   return () => {}
+  // }, [report])
+  
 
 
   // main return
