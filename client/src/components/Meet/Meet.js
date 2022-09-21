@@ -565,7 +565,6 @@ const Meet = (props) => {
 
   // main return
   return (
-
     <>
       <Layout>
         <Header className='header' style={{ background: 'rgba(31,37, 58, 1)' }}>
