@@ -537,16 +537,13 @@ const Meet = (props) => {
     const enabledAudio = userVideoRef.current.srcObject.getAudioTracks()[0].enabled;
 
     navigator.mediaDevices
-    .getUserMedia({audio: { audioDeviceId,enabledAudio }})
+    .getUserMedia({audio: { 'deviceId':audioDeviceId,enabledAudio }})
     .then((stream) => {
-      
       const newStreamTrack = stream.getTracks().find((track) => track.kind === 'audio');
       
       const oldStreamTrack = userStream.current
         .getTracks()
         .find((track) => track.kind === 'audio');
-
-      console.log("oldStreamTrack ",oldStreamTrack)
 
       userStream.current.removeTrack(oldStreamTrack);
       userStream.current.addTrack(newStreamTrack);
@@ -566,6 +563,7 @@ const Meet = (props) => {
   }
 
 
+  // main return
   return (
 
     <>
