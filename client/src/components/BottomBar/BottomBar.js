@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState, useEffect, useReducer } from 'react';
 import { Button, Col, Divider, Row, Space, Badge, Card, InputNumber, Dropdown, Menu, message, Modal } from 'antd';
 import Icon, {
   AudioOutlined,
@@ -12,6 +12,7 @@ import Icon, {
   UpOutlined,
   CaretRightOutlined,
   EllipsisOutlined,
+  BorderOutlined,
 } from '@ant-design/icons';
 
 // import { useMetronome } from "react-metronome-hook";
@@ -19,6 +20,9 @@ import { useMetronome } from "./Metronome";
 
 import styled from 'styled-components';
 import './BottomBar.css'
+
+import {INITIAL_STATE, metronomeReducer} from './metronomeReducer'
+import socket from '../../socket';
 
 
 
@@ -32,7 +36,8 @@ const BottomBar = ({
   screenShare,
   videoDevices,
   showVideoDevices,
-  setShowVideoDevices
+  setShowVideoDevices,
+  SendTimestampMetronome,
 }) => {
   const handleToggle = useCallback(
     (e) => {
@@ -46,6 +51,16 @@ const BottomBar = ({
   const [isActiveAud, setIsActiveAud] = useState(false);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+
+  // Metronome 
+  const [metronomeData, setMetronomeData] = useState({
+    isPlaying: false,
+    count: 0,
+    bpm: 100,
+    beatsPerMeasure: 4
+  });
+
+  const [state, dispatch] = useReducer(metronomeReducer, INITIAL_STATE)
 
 
   
@@ -72,6 +87,25 @@ const BottomBar = ({
       bpm,
       beatsPerMeasure
     } = useMetronome(metronomeState.bpm, metronomeState.beatsPerMeasure, [click1, click2]);
+
+
+
+  // useEffects ---------------------------
+
+  useEffect(() => {
+    socket.on('FE-metronome', ({ userId, metroData })=>{
+      console.log("MEET userId, metroData", userId, metroData)
+      setMetronomeData((prev) => ({
+        ...prev,metroData
+      }))
+      updateMetronomeData(metroData)
+      
+    })
+  }, [metronomeData.bpm, metronomeData.isPlaying])
+
+
+  // --------------------------------------
+
 
   const handleBtnClick = () => {
     setIsActive(current => !current);
@@ -131,9 +165,65 @@ const BottomBar = ({
 
   // Metronome --------------------------------------------
 
-  const handleMetronomeChange = (value) => {
+  const handleSendMetronome = () => {
+    const metroData = { startMetronome,
+      stopMetronome,
+      isTicking,
+      setBpm,
+      setBeatsPerMeasure,
+      bpm,
+      beatsPerMeasure }
+    SendTimestampMetronome(metroData)
+  }
+
+  const updateMetronomeData = (data) => {
+    const {bpm, isTicking, count, beatsPerMeasure} = data
+    console.log("------ Data in Update Metronome", data)
+    if(data){
+      if(data.bpm>=60 || data.bpm<=260){
+        setBpm(bpm)
+        isTicking ? stopMetronome() : startMetronome()
+        // startMetronome()
+      }
+      // isPlaying ? stopMetronome() : startMetronome()
+    }
+  //   else{
+  //     setBpm(100)
+  // }
+
+  }
+
+  const handleBpmChange = (name, value) => {
+    // stopMetronome()
+    console.log("E Value BPM", name, value)
+
+    // dispatch({type: "CHANGE_INPUT", payload: { name: }})
+
+    isTicking ? stopMetronome() : startMetronome()
     const bpm = value;
-    if(bpm>=60 || bpm<=260) setBpm(bpm)
+    if(bpm>=60 || bpm<=260){
+      setBpm(bpm)
+      handleSendMetronome()
+      // startMetronome()
+    }else{
+      setBpm(100)
+    }
+  }
+
+  
+  const handleMetroPlayStop = (value) => {
+    const bpm = metronomeData.bpm
+    if(bpm>=60 || bpm<=260){
+      // setBpm(bpm)
+      isTicking ? stopMetronome() : startMetronome()
+      handleSendMetronome()
+      // startMetronome()
+    }else{
+      setBpm(100)
+    }
+  }
+
+    
     // // console.log("init BPM", bpm)
     // if(metronomeState.isPlaying){
     //   clearInterval(timmer.current)
@@ -148,7 +238,6 @@ const BottomBar = ({
     //   setMetronomeState({...metronomeState.bpm,bpm})
     //   // console.log("BPM", metronomeState.bpm)
     // }
-  }
 
 
   const playclick = () => {
@@ -218,10 +307,12 @@ const BottomBar = ({
             
           {/* <GoldOutlined  style={{ fontSize: '40px', alignContent:'center'}}  /> */}
             {/* Start MetroNome */}
-            <Button ghost icon={<CaretRightOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px', fontSize: '40px'}} onClick={isTicking ? stopMetronome : startMetronome}  />
+            <Button ghost icon={ isTicking ? <BorderOutlined /> : <CaretRightOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px', fontSize: '40px'}} onClick={ handleMetroPlayStop }  />
 
             {/* BPM input */}
-            <InputNumber bordered={false}  status="warning" defaultValue={120} style={{color:'gold', width:65}} min={60} max={160} onChange={handleMetronomeChange} />
+            <InputNumber name="bpm" bordered={false}  status="warning"  defaultValue={state.bpm} style={{color:'gold', width:65}} min={60} max={160} onChange={handleBpmChange} />
+
+            <InputNumber name="count" bordered={false}  status="warning"  defaultValue={state.count} style={{color:'gold', width:65}} min={1} max={7} onChange={handleBpmChange} />
             {/* <Button ghost icon={<UsergroupAddOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px'}} onClick={showModal}/> */}
 
             

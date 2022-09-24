@@ -113,6 +113,16 @@ io.on('connection', (socket) => {
       .to(roomId)
       .emit('FE-toggle-camera', { userId: socket.id, switchTarget });
   });
+
+  socket.on('BE-metronome', ({roomId, metroData}) => {
+
+    console.log("SERver metronome", metroData)
+
+    socket.broadcast
+    .to(roomId)
+    .emit('FE-metronome', {userID:socket.id, metroData})
+  });
+
 });
 
 http.listen(PORT, () => {

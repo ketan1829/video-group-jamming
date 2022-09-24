@@ -33,6 +33,7 @@ const Meet = (props) => {
 
   const [report, setReport] = useState([{ timestamp: 1662552000523.914 },])
   const [time, setTime] = useState(Date.now());
+  // const [metronomeData, setMetronomeData] = useState({});
 
   let webrtcStats = new WebRTCStats({
     getStatsInterval: 5000
@@ -161,6 +162,14 @@ const Meet = (props) => {
         };
       });
     });
+
+    // socket.on('FE-metronome', ({ userId, metroData })=>{
+    //   console.log("MEET userId, metroData", userId, metroData)
+    //   setMetronomeData((prev) => ({
+    //     ...prev,metroData
+    //   }))
+      
+    // })
 
     return () => {
       socket.disconnect();
@@ -316,8 +325,6 @@ const Meet = (props) => {
   };
 
   const toggleCameraAudio = (e) => {
-
-
     console.log("EVENT", e)
 
     const target = e // .target.getAttribute('data-switch');
@@ -348,7 +355,15 @@ const Meet = (props) => {
     });
 
     socket.emit('BE-toggle-camera-audio', { roomId, switchTarget: target });
+    
   };
+
+  
+
+  const SendTimestampMetronome = (metroData) => {
+    console.log("DATA", metroData)
+    socket.emit('BE-metronome', { roomId, metroData });
+  }
 
   const clickScreenSharing = () => {
     if (!screenShare) {
@@ -579,6 +594,7 @@ const Meet = (props) => {
               videoDevices={videoDevices}
               showVideoDevices={showVideoDevices}
               setShowVideoDevices={setShowVideoDevices}
+              SendTimestampMetronome = {SendTimestampMetronome}
             />
             {/* <Row style={{ backgroundColor: 'gold', }}>
         <Col flex="1 1 200px">
