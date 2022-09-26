@@ -162,6 +162,7 @@ const Main = (props) => {
             <Form.Item name="roomName" label={<label style={{ color: "white" }}>Room Name</label>} rules={[{ required: true }]} style={{color:'red'}}>
               <Input id="roomName"/>
             </Form.Item>
+            {/* here user name checking added */}
             <Form.Item {...err && {help: errMsg,validateStatus: 'error'}} name="userName" label={<label style={{ color: "white" }}>Username</label>} rules={[{ required: true,message:'Please enter your username ;)' }]}>
               <Input id="userName"/>
             </Form.Item>
