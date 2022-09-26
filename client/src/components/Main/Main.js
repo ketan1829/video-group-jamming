@@ -47,6 +47,15 @@ const Main = (props) => {
         setErrMsg('User name already exist');
       }
     });
+    socket.on("connect", () => {
+      // const transport = socket.io.engine.transport.name; // in most cases, "polling"
+      // console.log("########### : transport ",transport)
+    
+      // socket.io.engine.on("upgrade", () => {
+      //   const upgradedTransport = socket.io.engine.transport.name; // in most cases, "websocket"
+      //   console.log("########### upgradedTransport : ",upgradedTransport)
+      // });
+  });
   }, [props.history]);
 
   function clickJoin(values ) {
@@ -153,7 +162,7 @@ const Main = (props) => {
             <Form.Item name="roomName" label={<label style={{ color: "white" }}>Room Name</label>} rules={[{ required: true }]} style={{color:'red'}}>
               <Input id="roomName"/>
             </Form.Item>
-            <Form.Item name="userName" label={<label style={{ color: "white" }}>Username</label>} rules={[{ required: true }]}>
+            <Form.Item {...err && {help: errMsg,validateStatus: 'error'}} name="userName" label={<label style={{ color: "white" }}>Username</label>} rules={[{ required: true,message:'Please enter your username ;)' }]}>
               <Input id="userName"/>
             </Form.Item>
             {/* <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>

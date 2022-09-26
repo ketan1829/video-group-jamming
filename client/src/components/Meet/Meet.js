@@ -105,8 +105,7 @@ const Meet = (props) => {
     window.addEventListener('popstate', goToBack);
 
     // Connect Camera & Mic
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       .then((stream) => {
         getSetDevices()
         userVideoRef.current.srcObject = stream; // local
@@ -183,6 +182,7 @@ const Meet = (props) => {
         });
 
         socket.on('FE-user-leave', ({ userId, userName }) => {
+          console.log("FE-user-leave:",userId)
           const peerIdx = findPeer(userId);
           peerIdx.peer.destroy();
           setPeers((users) => {
@@ -210,14 +210,15 @@ const Meet = (props) => {
       });
     });
 
+    
+    // for getting peer stats in 5 second interval
     setInterval(() => {
-      console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",peers.length)
       if(peers.length){
         peers[0].getStats((err, stats) => {
           stats.forEach((report) => {
           if(report.kind==="video" & report.type==="remote-inbound-rtp"){
             console.log("report",report)
-          setReport(report)
+            setReport(report)
           }
           });
         });
@@ -545,10 +546,11 @@ const Meet = (props) => {
   const switchAudioSource = (audioDeviceId) => {
 
     setSelectedAudioDeviceId(audioDeviceId)
-    const enabledAudio = userVideoRef.current.srcObject.getAudioTracks()[0].enabled;
+    console.log("userVideoRef.current.srcObject.getAudioTracks():",userVideoRef.current.srcObject.getAudioTracks())
+    // const enabledAudio = userVideoRef.current.srcObject.getAudioTracks()[0].enabled;
 
     navigator.mediaDevices
-    .getUserMedia({audio: { 'deviceId':audioDeviceId,enabledAudio }})
+    .getUserMedia({audio: { 'deviceId':audioDeviceId,enabledAudio:true }})
     .then((stream) => {
       const newStreamTrack = stream.getTracks().find((track) => track.kind === 'audio');
       

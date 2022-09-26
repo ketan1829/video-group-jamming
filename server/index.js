@@ -1,35 +1,82 @@
 const express = require('express');
+// const http = require('http');
 const app = express();
-const http = require('http').createServer(app);
-const io = require('socket.io')(http,{path:'/jamsocket'});
-const PORT = process.env.PORT || 3001;
+const fs = require('fs');
 const path = require('path');
+
+// var options = {
+//   key: fs.readFileSync('/home/nitin_goswami/Choira/JammingApp/video-group-jamming/client/ssls/privkey.pem'),
+//   cert: fs.readFileSync('/home/nitin_goswami/Choira/JammingApp/video-group-jamming/client/ssls/fullchain.pem')
+// };
+
+
+var privateKey = fs.readFileSync('ssls/privkey.pem', 'utf8').toString();
+var certificate = fs.readFileSync('ssls/cert.pem', 'utf8').toString();
+var chain = fs.readFileSync('ssls/chain.pem').toString();
+var options = {
+  cors: {
+    origin: '*'
+},
+key: fs.readFileSync('./ssls/privkey.pem'),
+cert: fs.readFileSync('./ssls/cert.pem'),
+ca: fs.readFileSync('./ssls/chain.pem')
+};
+
+const http = require('https').createServer(options,app);
+// const http = require('http').createServer(app);
+// const http = require('http').createServer(options,app);
+
+// const http_proxy = require('http-proxy').createProxyServer({
+//   target: "http://localhost:3000",
+//   ws: true,
+// }).listen(app);
+
+// const io = require('socket.io')(http,{path:'/jamsocket',cors:{
+//   origin: "*",
+//   methods: ["GET", "POST"],
+//   allowedHeaders: ["Origin", "Content-Type", "X-Auth-Token", "X-Requested-With", "Accept", "Authorization", "X-CSRF-TOKEN", "X-Socket-Id"]
+// },
+// transports: ['polling']
+// }).listen(http);
+
+const PORT = 3001;
+
+
+const io_options = {
+  path:'/jamsocket'
+}
+// const io = require('socket.io')(http,io_options);
+const io = require('socket.io')(http);
+
+// io.set('transports', ['xhr-polling','polling','websocket']);
 
 let socketList = {};
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
+// if (process.env.NODE_ENV === 'production') {
+//   app.use(express.static(path.join(__dirname, '../client/build')));
 
-  app.get('/*', function (req, res) {
-    res.sendFile(path.join(__dirname, '../client/build/index.html'));
-  });
-}
+//   app.get('/*', function (req, res) {
+//     res.sendFile(path.join(__dirname, '../client/build/index.html'));
+//   });
+// }
 
 // Route
 app.get('/ping', (req, res) => {
   // console.log("PING", req)
-  res
-    .send({
-      success: true,
-    })
-    .status(200);
+  res.send({success: true}).status(200);
 });
 
 // Socket
 io.on('connection', (socket) => {
   console.log(`New User connected: ${socket.id}`);
+
+  // socket.conn.on("upgrade", () => {
+  //   const upgradedTransport = socket.conn.transport.name; // in most cases, "websocket"
+  //   console.log("########### : ",upgradedTransport)
+
+  // });
 
   socket.on('disconnect', () => {
     socket.disconnect();
@@ -38,15 +85,18 @@ io.on('connection', (socket) => {
 
   socket.on('BE-check-user', ({ roomId, userName }) => {
     let error = false;
+    let error_msg = 'green_flag'
+    console.log("socketList:",socketList)
 
     io.sockets.in(roomId).clients((err, clients) => {
       console.log("clients", clients)
       clients.forEach((client) => {
-        if (socketList[client] === userName) {
+        if (socketList[client].userName === userName) {
           error = true;
+          error_msg = 'username already exists :('
         }
       });
-      socket.emit('FE-error-user-exist', { error });
+      socket.emit('FE-error-user-exist', { error,error_msg });
     });
   });
 
@@ -57,6 +107,8 @@ io.on('connection', (socket) => {
     // Socket Join RoomName
     socket.join(roomId);
     socketList[socket.id] = { userName, video: true, audio: true };
+
+    console.log("socketList:",socketList)
 
     // Set User List
     io.sockets.in(roomId).clients((err, clients) => {
@@ -96,10 +148,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('BE-leave-room', ({ roomId, leaver }) => {
+    console.log("BE-leave-room, Room : ",roomId,"Leaver : ",leaver)
     delete socketList[socket.id];
-    socket.broadcast
-      .to(roomId)
-      .emit('FE-user-leave', { userId: socket.id, userName: [socket.id] });
+    socket.broadcast.to(roomId).emit('FE-user-leave', { userId: socket.id, userName: [socket.id] });
     io.sockets.sockets[socket.id].leave(roomId);
   });
 
@@ -113,8 +164,12 @@ io.on('connection', (socket) => {
       .to(roomId)
       .emit('FE-toggle-camera', { userId: socket.id, switchTarget });
   });
+
+
 });
+
 
 http.listen(PORT, () => {
   console.log('Connected : 3001');
 });
+
