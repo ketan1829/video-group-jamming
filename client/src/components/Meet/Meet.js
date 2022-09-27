@@ -15,6 +15,14 @@ import VideoCard from '../Video/VideoCard';
 import BottomBar from '../BottomBar/BottomBar';
 import Chat from '../Chat/Chat';
 
+// => here,need to dig more into this
+import * as process from 'process';
+
+(window).global = window;
+(window).process = process;
+(window).Buffer = [];
+// <=
+
 const Meet = (props) => {
   const currentUser = sessionStorage.getItem('user');
   const [peers, setPeers] = useState([]);
@@ -58,17 +66,12 @@ const Meet = (props) => {
       navigator.mediaDevices.enumerateDevices().then((devices) => {
         // nc
         const uniqueDevices = [];
-        const audioDevices = devices.filter((device) =>{
-          if(device.kind === 'audioinput'){
-            return true
-          }
-        }
-        );
+        const audioDevices = devices.filter((adevice) => adevice.kind === 'audioinput');
+        const videoDevices = devices.filter((vdevice) => vdevice.kind === 'videoinput');
         setAudioDevices(audioDevices)
+        setVideoDevices(videoDevices);
         setSelectedAudioDeviceId(audioDevices[0].deviceId)
         console.table(audioDevices)
-        const newVideoDevices = devices.filter((device) => device.kind === 'videoinput');
-        setVideoDevices(newVideoDevices);
       });
     }
     // nc
@@ -105,15 +108,14 @@ const Meet = (props) => {
     window.addEventListener('popstate', goToBack);
 
     // Connect Camera & Mic
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-      .then((stream) => {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
         getSetDevices()
         userVideoRef.current.srcObject = stream; // local
         userStream.current = stream;
 
         socket.emit('BE-join-room', { roomId, userName: currentUser });
 
-
+        // here new peers get added
         socket.on('FE-user-join', (users) => {
           // all users
           console.log("ALL users in user-join", users)
@@ -182,7 +184,6 @@ const Meet = (props) => {
         });
 
         socket.on('FE-user-leave', ({ userId, userName }) => {
-          console.log("FE-user-leave:",userId)
           const peerIdx = findPeer(userId);
           peerIdx.peer.destroy();
           setPeers((users) => {
@@ -191,7 +192,7 @@ const Meet = (props) => {
           });
           peersRef.current = peersRef.current.filter(({ peerID }) => peerID !== userId);
         });
-      });
+    });
 
     socket.on('FE-toggle-camera', ({ userId, switchTarget }) => {
       const peerIdx = findPeer(userId);
@@ -266,7 +267,6 @@ const Meet = (props) => {
       initiator: true,
       trickle: false,
       wrtc: { RTCPeerConnection }
-
     });
 
     peer.getStats((err, report) => {
@@ -280,12 +280,13 @@ const Meet = (props) => {
       initiator: true,
       trickle: false,
       stream,
-      iceRestart: true,
-      // wrtc: { RTCPeerConnection }
+      iceRestart: true
+      // // wrtc: { RTCPeerConnection }
 
     });
 
     peer.on('signal', (signal) => {
+      console.log("peer signaling....")
       socket.emit('BE-call-user', {
         userToCall: userId,
         from: caller,
@@ -295,7 +296,16 @@ const Meet = (props) => {
 
     peer.on('disconnect', () => {
       peer.destroy();
+      console.log("Peer destroyed")
     });
+
+    peer.on('error',(error)=>{
+      console.log("Peerr error : ",error)
+    })
+
+    peer.on('close',()=>{
+      console.log("Peerr close !")
+    })
 
     return peer;
   }
@@ -309,7 +319,7 @@ const Meet = (props) => {
         'iceServers': [{
             'urls': 'stun:stun.l.google.com:19302'
         }]
-    },
+      }
     });
 
     peer.on('signal', (signal) => {
@@ -317,18 +327,39 @@ const Meet = (props) => {
     });
 
     peer.on('disconnect', () => {
+      console.log("Ok peer dissconnected ")
       peer.destroy();
     });
 
     peer.signal(incomingSignal);
 
-    console.log("peer OBJ:", peer)
+    // console.log("peer OBJ:", peer)
 
     peer.getStats((err, report) => {
       setReport(report)
     });
 
     return peer;
+  }
+
+  function removePeer(peer,userId){
+    const isVideoOn = userVideoRef.current.srcObject.getVideoTracks()[0].enabled;
+    const isAudioOn = userVideoRef.current.srcObject.getAudioTracks()[0].enabled;
+    navigator.mediaDevices.getUserMedia({ video: isVideoOn, audio: isAudioOn })
+      .then((stream) => {
+        // const userVideoStream = stream.getTracks().find((track) => track.kind === 'video');
+        // const userAudioStream = stream.getTracks().find((track) => track.kind === 'audio');
+        // userStream.current.removeTrack(stream);
+        // userStream.current.removeStream(stream);
+        peer.removeStream(stream);
+        // peer.destroy()
+        // window.location.href = '/';
+        // setPeers((users) => {
+        //   users = users.filter((user) => user.peerID !== peer.peerID);
+        //   return [...users];
+        // });
+        // peersRef.current = peersRef.current.filter(({ peerID }) => peerID !== userId);
+      })
   }
 
   function findPeer(id) {
@@ -405,6 +436,7 @@ const Meet = (props) => {
     socket.emit('BE-toggle-camera-audio', { roomId, switchTarget: target });
   };
 
+  
   const clickScreenSharing = () => {
     if (!screenShare) {
       navigator.mediaDevices
@@ -495,7 +527,7 @@ const Meet = (props) => {
             );
           });
         });
-    }
+      }
   };
 
 
@@ -546,7 +578,6 @@ const Meet = (props) => {
   const switchAudioSource = (audioDeviceId) => {
 
     setSelectedAudioDeviceId(audioDeviceId)
-    console.log("userVideoRef.current.srcObject.getAudioTracks():",userVideoRef.current.srcObject.getAudioTracks())
     // const enabledAudio = userVideoRef.current.srcObject.getAudioTracks()[0].enabled;
 
     navigator.mediaDevices
@@ -554,9 +585,7 @@ const Meet = (props) => {
     .then((stream) => {
       const newStreamTrack = stream.getTracks().find((track) => track.kind === 'audio');
       
-      const oldStreamTrack = userStream.current
-        .getTracks()
-        .find((track) => track.kind === 'audio');
+      const oldStreamTrack = userStream.current.getTracks().find((track) => track.kind === 'audio');
 
       userStream.current.removeTrack(oldStreamTrack);
       userStream.current.addTrack(newStreamTrack);

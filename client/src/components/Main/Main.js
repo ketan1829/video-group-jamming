@@ -82,9 +82,10 @@ const Main = (props) => {
   };
 
   const onFill = () => {
+    let r = (Math.random()).toString(36).toUpperCase().substring(2,5);
     form.setFieldsValue({
       roomName: 'Mark',
-      userName: 'KET',
+      userName: r,
     });
   };
 
