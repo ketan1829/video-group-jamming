@@ -80,7 +80,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     socket.disconnect();
-    console.log('User disconnected!');
+    console.log('User disconnected :',socket.id);
     // roomId = socketList[socket.id].roomId;
     // userName = socketList[socket.id].userName;
     delete socketList[socket.id];
@@ -89,6 +89,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('BE-check-user', ({ roomId, userName }) => {
+    console.log("*****************")
+
     let error = false;
     let error_msg = 'green_flag'
     io.sockets.in(roomId).clients((err, clients) => {
@@ -99,6 +101,7 @@ io.on('connection', (socket) => {
           error_msg = 'Username already exists :('
         }
       });
+      console.log("#######:",error,error_msg)
       socket.emit('FE-error-user-exist', { error,error_msg });
     });
   });

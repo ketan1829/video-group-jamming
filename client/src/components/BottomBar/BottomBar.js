@@ -76,11 +76,13 @@ const BottomBar = ({
   };
 
   const handleOk = () => {
+    navigator.clipboard.writeText(window.location.href)
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
       setOpen(false);
-    }, 3000);
+      message.success(`Invitation link copied to clipboard` );
+    }, 2000);
   };
 
   const handleCancel = () => {
@@ -224,12 +226,10 @@ const BottomBar = ({
             <Modal
               open={open}
               title="Invite Participants"
-              onOk={handleOk}
+              // onOk={handleOk}
               onCancel={handleCancel}
               footer={[
-                <Button key="back" onClick={handleCancel}>
-                  Return
-                </Button>,
+                <Button key="back" onClick={handleCancel}>close</Button>,
                 // <Button key="submit" type="primary" loading={loading} onClick={handleOk}>
                 //   Submit
                 // </Button>
@@ -245,7 +245,7 @@ const BottomBar = ({
                 </Button>,
               ]}
               >
-              <p>Some contents...</p>
+              <p>{window.location.href}</p>
             </Modal>
 
 
@@ -301,7 +301,7 @@ const BottomBar = ({
             <Button ghost icon={<UsergroupAddOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px'}} onClick={showModal}/>
 
             
-            <Modal
+            {/* <Modal
               open={open}
               title="Invite Participants"
               onOk={handleOk}
@@ -326,7 +326,7 @@ const BottomBar = ({
               ]}
               >
               <p>Some contents...</p>
-            </Modal>
+            </Modal> */}
 
 
             {/* <Badge size="small" placement="start" count={isActiveAud?"x":null}>  */}

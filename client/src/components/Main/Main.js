@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Layout, Col, Row, Form, Input, Button, Select, Space } from 'antd';
 import BannerAnim, { Element } from 'rc-banner-anim';
 import TweenOne from 'rc-tween-one'
+import { withRouter } from "react-router";
 
 import './Main.css'
 import 'antd/dist/antd.min.css';
@@ -34,15 +35,23 @@ const Main = (props) => {
 
 
   useEffect(() => {
+    const stateData = props.location.state
+    const _ = stateData?form.setFieldsValue({
+      roomName: stateData.roomId,
+      userName : ''
+    }):null;
 
     socket.on('FE-error-user-exist', ({ error }) => {
+      console.log("FE-error-user-exist Evenet fired")
       if (!error) {
+        console.log("OKKKKKKKKKKYYYYYYYYYYYYYYYYYy")
         const roomName = roomRef.current;
         const userName = userRef.current;
 
         sessionStorage.setItem('user', userName);
         props.history.push(`/jam/${roomName}`);
       } else {
+        console.log("Not OKKKKKKKKKKYYYYYYYYYYYYYYYYYy")
         setErr(error);
         setErrMsg('User name already exist');
       }
@@ -58,23 +67,26 @@ const Main = (props) => {
   });
   }, [props.history]);
 
-  function clickJoin(values ) {
+  function clickJoin(values) {
     // const roomName = roomRef.current.value;
     // const userName = userRef.current.value;
     const { roomName, userName } = values
-    console.log(roomName, userName);
+    console.log("details:",values);
     if (!roomName || !userName) {
+      console.log("if part")
       setErr(true);
       setErrMsg('Enter Room Name or User Name');
     } else {
-      socket.emit('BE-check-user', { roomId: roomName, userName });
+      console.log("else part")
+      console.log("values : ",values.roomName)
+      console.log("values : ",values.userName)
+      console.log(socket.emit('BE-check-user', { roomId: roomName, userName }));
     }
   }
-
   const onFinish = values => {
-    roomRef.current = values.roomName
-    userRef.current = values.userName
-    clickJoin(values)
+    roomRef.current = values.roomName;
+    userRef.current = values.userName;
+    clickJoin(values);
   };
 
   const onReset = () => {
@@ -113,7 +125,7 @@ const Main = (props) => {
                   ],
                 }}
               >
-                <BgElement
+              <BgElement
                   key="bg"
                   className="bg"
                   style={{
@@ -192,8 +204,8 @@ const Main = (props) => {
             </Form.Item>
             <Form.Item {...tailLayout}>
               <Space direction='horizontal'>
-              <Button className="mr-2" style={{backgroundColor:'#ffc701', color:'#333'}} type="primary" htmlType="submit" onClick={clickJoin}>
-                Create Room
+              <Button className="mr-2" style={{backgroundColor:'#ffc701', color:'#333'}} type="primary" htmlType="submit">
+                Create/Join Room
               </Button>
               <Button className="mr-2" htmlType="button" onClick={onReset}>
                 Reset
@@ -266,4 +278,4 @@ const JoinButton = styled.button`
   }
 `;
 
-export default Main;
+export default withRouter(Main);
