@@ -237,11 +237,11 @@ const Meet = (props) => {
     setInterval(() => {
 
       if(peers.length){
-      peers[0].getStats((err, stats) => {
-        const _ = err?console.log("stats error : ",err):null;
-        console.log("stats : ",stats)
-      })
-    }
+        peers[0].getStats((err, stats) => {
+          const _ = err?console.log("stats error : ",err):null;
+          console.log("stats : ",stats)
+        })
+      }
     }, 5000);
 
     return () => {
