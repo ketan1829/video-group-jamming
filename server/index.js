@@ -173,6 +173,16 @@ io.on('connection', (socket) => {
   });
 
 
+  socket.on('BE-metronome', ({roomId, metroData}) => {
+
+    console.log("SERver metronome", metroData, "roomID", roomId, "socket.id", socket.id)
+
+    socket.broadcast
+    .to(roomId)
+    .emit('FE-metronome', {userID:socket.id, metroData})
+  });
+
+
 });
 
 

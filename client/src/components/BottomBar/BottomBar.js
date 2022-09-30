@@ -1,5 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { Button, Col, Divider, Row, Space, Badge, Card, InputNumber, Dropdown, Menu, message, Modal } from 'antd';
+import React, { useCallback, useRef, useState, useEffect, useReducer } from 'react';
+import { Button, Col, Divider, Row, Space, Badge, Card, InputNumber, Dropdown, Menu, message, Modal, Input, Tooltip } from 'antd';
 import Icon, {
   AudioOutlined,
   VideoCameraOutlined,
@@ -12,10 +12,19 @@ import Icon, {
   UpOutlined,
   CaretRightOutlined,
   EllipsisOutlined,
+  BorderOutlined,
+  MinusOutlined,
+  PlusOutlined,
 } from '@ant-design/icons';
+
+// import { useMetronome } from "react-metronome-hook";
+import { useMetronome } from "./Metronome";
 
 import styled from 'styled-components';
 import './BottomBar.css'
+
+import {INITIAL_STATE, metronomeReducer} from './metronomeReducer'
+import socket from '../../socket';
 
 
 
@@ -30,6 +39,7 @@ const BottomBar = ({
   videoDevices,
   showVideoDevices,
   setShowVideoDevices,
+  SendTimestampMetronome,
   audioDevices,
   switchAudioSource
 }) => {
@@ -45,10 +55,24 @@ const BottomBar = ({
   const [isActiveAud, setIsActiveAud] = useState(false);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+
+  // Metronome 
+  const [metronomeData, setMetronomeData] = useState({
+    isPlaying: false,
+    count: 0,
+    bpm: 100,
+    beatsPerMeasure: 4
+  });
+
+  const [state, dispatch] = useReducer(metronomeReducer, INITIAL_STATE)
+
+
+  
+
   let click1 = "//daveceddia.com/freebies/react-metronome/click1.wav";
   let click2 = "//daveceddia.com/freebies/react-metronome/click2.wav";
-  click1 = new Audio(click1);
-  click2 = new Audio(click2);
+  // click1 = new Audio(click1);
+  // click2 = new Audio(click2);
   let timmer = useRef(null)
 
   const [metronomeState, setMetronomeState] = useState({
@@ -58,7 +82,44 @@ const BottomBar = ({
       beatsPerMeasure: 4
     });
 
-  const {isPlaying, bpm} = metronomeState;
+    const {
+      startMetronome,
+      stopMetronome,
+      isTicking,
+      setBpm,
+      setBeatsPerMeasure,
+      bpm,
+      beatsPerMeasure
+    } = useMetronome(state.bpm, state.count, [click1, click2]);
+
+
+ // u
+
+
+  // useEffects ---------------------------
+
+  useEffect(() => {
+    socket.on('FE-metronome', ({ userId, metroData })=>{
+      console.log("MEET userId, metroData", userId, metroData, typeof(metroData))
+
+      for (var key in metroData) {
+        if (metroData.hasOwnProperty(key)) {
+            console.log(key + " -> " + metroData[key]);
+            dispatch({type: "CHANGE_INPUT", payload: { name: key , value: metroData[key] }})
+      }
+    }
+
+      // setMetronomeData((prev) => ({
+      //   ...prev,metroData
+      // }))
+      updateMetronomeData(metroData)
+      
+    })
+  }, [state.bpm, state.isPlaying, state.count])
+
+
+  // -------------------------------------- 
+
 
   const handleBtnClick = () => {
     setIsActive(current => !current);
@@ -139,27 +200,114 @@ const BottomBar = ({
 
   // Metronome --------------------------------------------
 
-  const handleMetronomeChange = (value) => {
-    const bpm = value;
-    if(metronomeState.isPlaying){
-      clearInterval(timmer.current)
-      timmer.current = setInterval(playclick, (60/metronomeState.bpm)*1000)
-      setMetronomeState((prev)=>(
-        {
-          ...prev.count = 0,
-          ...prev.bpm = bpm,
+  const handleSendMetronome = (data) => {
+    const metroData = { 
+      isPlaying: data.isPlaying,
+      bpm: data.bpm,
+      count:data.count }
+
+
+
+    SendTimestampMetronome(metroData)
+  }
+
+  const updateMetronomeData = (data) => {
+    const {bpm, isPlaying, count, beatsPerMeasure} = data
+    console.log("------ Data in Update Metronome", data)
+    if(data){
+      if(data.bpm>=60 || data.bpm<=260){
+        setBpm(bpm)
+        // isPlaying ? stopMetronome() : startMetronome()
+        // startMetronome()
+      }if(data.hasOwnProperty('isPlaying')){
+        console.log("PLAAaaa", isPlaying);
+        isPlaying ? stopMetronome() : startMetronome()
+      }if(data.hasOwnProperty('count')){
+        console.log("PLAAaaa count", count);
+        if(data.count>=4 || data.count <=7){
+          console.log("Setting count");
+          setBeatsPerMeasure(count)
         }
-      ))
-    }else{
-      setMetronomeState({...metronomeState.bpm,bpm})
+      }
+
+      // isPlaying ? stopMetronome() : startMetronome()
+    }
+  //   else{
+  //     setBpm(100)
+  // }
+
+
+
+
+  }
+
+  const handleBpmChange = (name) => (value) => {
+    // stopMetronome()
+    console.log("E Value BPM", name, value)
+
+    dispatch({type: "CHANGE_INPUT", payload: { name, value }})
+
+    // isTicking ? stopMetronome() : startMetronome()
+    if (name === "bpm") {
+      const bpm = value;
+      if(bpm>=60 || bpm<=260){
+        setBpm(bpm)
+        handleSendMetronome({bpm})
+        // startMetronome()
+      }else{
+        setBpm(100)
+      }
+    }else if (name=== "count") {
+      const count = value;
+      if(count>=4 || count<=7){
+        setBpm(count)
+        handleSendMetronome({count})
+        // startMetronome()
+      }else{
+        setBpm(100)
+      }
     }
   }
 
+  
+  const handleMetroPlayStop = () => {
+    const bpm = state.bpm
+    // console.log("Metro Play Stop", value)
+    if(bpm>=60 || bpm<=260){
+      // setBpm(bpm)
+      isTicking ? stopMetronome() : startMetronome()
+      handleSendMetronome({isPlaying:isTicking})
+      dispatch({type: "PLAYING", payload: { 'isPlaying': isTicking }})
+      // startMetronome()
+    }else{
+      setBpm(100)
+    }
+  }
+
+    
+    // // console.log("init BPM", bpm)
+    // if(metronomeState.isPlaying){
+    //   clearInterval(timmer.current)
+    //   timmer.current = setInterval(playclick, (60/metronomeState.bpm)*1000)
+    //   setMetronomeState((prev)=>(
+    //     {
+    //       ...prev.count = 0,
+    //       ...prev.bpm = bpm,
+    //     }
+    //   ))
+    // }else{
+    //   setMetronomeState({...metronomeState.bpm,bpm})
+    //   // console.log("BPM", metronomeState.bpm)
+    // }
+
 
   const playclick = () => {
-    const {count, beatsPerMeasure} = metronomeState;
 
-    console.log("Metronome",metronomeState)
+      // click1.play();
+
+    let {count, beatsPerMeasure} = metronomeState;
+    // let nxtCount = (count + 1) % metronomeState.beatsPerMeasure
+    // console.log("Metronome Count",nxtCount)
 
     if(count % beatsPerMeasure ===0) {
       click2.play();
@@ -169,32 +317,51 @@ const BottomBar = ({
     }
 
     setMetronomeState(prev=>({
-      ...prev.count = (count + 1) % metronomeState.beatsPerMeasure
+      ...prev.count = (prev.count + 1) % prev.beatsPerMeasure
     }))
-    console.log("---Metronome",metronomeState)
-
+    console.log("--- Clk Metronome",metronomeState)
 
   }
 
+  const handleInputNumber = (e) => {
+    console.log("---  handleInputNumber",e)
+    const name = e.target.name
+    const value = e.target.value
+    console.log("---  name",name, value)
+    if (e.target.name === "input-plus") {
+      if (!isNaN(value) && value < 60) {
+        handleBpmChange(value+1)
+      }
+    }else {
+      if (!isNaN(value) && value > 60) {
+        handleBpmChange(value-1)
+      }
+    }
+  }
 
   const startstop = () => {
+
     if (metronomeState.isPlaying){
       clearInterval(timmer.current)
       setMetronomeState((prev)=>({
         ...prev.isPlaying=false
       }))
-      console.log("Timmer", timmer.current)
+      console.log("Timmer Stop", timmer.current)
     }else{
-      timmer.current = setInterval(playclick, (60/ metronomeState.bpm)/1000)
+      timmer.current = setInterval(playclick, (60/ metronomeState.bpm) * 1000)
+      console.log("current Timmer", timmer.current)
       setMetronomeState((prev)=>({
         ...prev.count = 0,
         ...prev.isPlaying = true
-      },
-      playclick
+    }
+    ,playclick()
       ))
+      // playclick()
       console.log("Timmer", timmer.current)
     }
   }
+
+  console.log("GLOBAL DAATA", state)
 
 
   return (
@@ -214,12 +381,34 @@ const BottomBar = ({
             <Button type="primary" danger onClick={goToBack} >End Jam</Button>
           </Col> */}
           <Col span={11} >
-            <Space span={2}>
+            <Space span={3}>
             
           {/* <GoldOutlined  style={{ fontSize: '40px', alignContent:'center'}}  /> */}
-            <Button ghost icon={<CaretRightOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px', fontSize: '40px'}} onClick={startstop}  />
+            {/* Start MetroNome */}
+            <div className="counter"></div>
+            <Button ghost icon={ state.isPlaying ? <BorderOutlined /> : <CaretRightOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px', fontSize: '40px'}} onClick={ handleMetroPlayStop }  />
 
-            <InputNumber bordered={false}  status="warning" defaultValue={100} style={{color:'gold', width:65}} min={60} max={240} onChange={handleMetronomeChange} />
+            {/* BPM input */}
+
+            {/* <Input.Group compact>
+              <Tooltip title="decrease bpm">
+                <Button icon={<MinusOutlined />} name="input-minus" onClick={(e)=>handleInputNumber(e)} />
+              </Tooltip>
+              <Input
+                style={{
+                  width: 'calc(100% - 200px)',
+                }}
+                defaultValue={state.bpm}
+              />
+              <Tooltip title="increase bpm">
+                <Button icon={<PlusOutlined />} name="input-plus" onClick={(e)=>handleInputNumber(e)} />
+              </Tooltip>
+            </Input.Group> */}
+
+
+            <InputNumber name="bpm" bordered={false} label={state.bpm} status="warning"  value={state.bpm} style={{color:'gold', width:65}} min={60} max={160} onChange={handleBpmChange('bpm')} />
+
+            <InputNumber name="count" bordered={false} status="warning"  value={state.count} style={{color:'gold', width:65}} min={1} max={7} onChange={handleBpmChange('count')} />
             {/* <Button ghost icon={<UsergroupAddOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px'}} onClick={showModal}/> */}
 
             

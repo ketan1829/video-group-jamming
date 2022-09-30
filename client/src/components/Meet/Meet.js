@@ -44,6 +44,7 @@ const Meet = (props) => {
   const [report, setReport] = useState([{ timestamp: 1662552000523.914 },])
   // const [report, setReport] = useState([])
   const [time, setTime] = useState(Date.now());
+  // const [metronomeData, setMetronomeData] = useState({});
 
   let webrtcStats = new WebRTCStats({
     getStatsInterval: 5000
@@ -243,6 +244,14 @@ const Meet = (props) => {
         })
       }
     }, 5000);
+
+    // socket.on('FE-metronome', ({ userId, metroData })=>{
+    //   console.log("MEET userId, metroData", userId, metroData)
+    //   setMetronomeData((prev) => ({
+    //     ...prev,metroData
+    //   }))
+      
+    // })
 
     return () => {
       // socket.disconnect();
@@ -453,9 +462,16 @@ const Meet = (props) => {
     });
 
     socket.emit('BE-toggle-camera-audio', { roomId, switchTarget: target });
+    
   };
 
   
+
+  const SendTimestampMetronome = (metroData) => {
+    console.log("DATA", metroData, "roomId", roomId)
+    socket.emit('BE-metronome', { roomId, metroData });
+  }
+
   const clickScreenSharing = () => {
     if (!screenShare) {
       navigator.mediaDevices
@@ -574,6 +590,19 @@ const Meet = (props) => {
   //     }
   //     });
     
+
+    // if(peers.length){
+    // peers[0].getStats((err, stats) => {
+      // let statsOutput = "";
+      // stats.forEach((report) => {
+      // if(report.kind==="video" & report.type==="remote-inbound-rtp"){
+      // statsOutput += `<h2>Report: ${report.type}</h2>\n<strong>ID:</strong> ${report.id}<br>\n` +
+          // `<strong>Timestamp:</strong> ${report.timestamp}<br>\n`;
+        // console.log("Type", report.type, "report.timestamp", report.timestamp)
+      // console.log("report", report)
+      // setReport(report)
+      // console.log("Audio Round Trip Time (or Latency): ", report.roundTripTime*1000)
+
   //     // console.log("statsOutput", statsOutput)
   //     // document.querySelector(".stats-box").innerHTML = statsOutput;
 
@@ -582,6 +611,7 @@ const Meet = (props) => {
   // }, 5000);
 
   const navItems = [{ key: 1, label: "Home" }, { key: 2, label: "Jam" }]
+
 
 
   // nc
@@ -717,6 +747,8 @@ const Meet = (props) => {
               setShowVideoDevices={setShowVideoDevices}
               audioDevices={audioDevices}
               switchAudioSource={switchAudioSource}
+              SendTimestampMetronome = {SendTimestampMetronome}
+
             />
             {/* <Row style={{ backgroundColor: 'gold', }}>
         <Col flex="1 1 200px">
