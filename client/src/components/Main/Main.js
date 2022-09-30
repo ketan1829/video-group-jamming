@@ -44,14 +44,12 @@ const Main = (props) => {
     socket.on('FE-error-user-exist', ({ error }) => {
       console.log("FE-error-user-exist Evenet fired")
       if (!error) {
-        console.log("OKKKKKKKKKKYYYYYYYYYYYYYYYYYy")
         const roomName = roomRef.current;
         const userName = userRef.current;
 
         sessionStorage.setItem('user', userName);
         props.history.push(`/jam/${roomName}`);
       } else {
-        console.log("Not OKKKKKKKKKKYYYYYYYYYYYYYYYYYy")
         setErr(error);
         setErrMsg('User name already exist');
       }
@@ -71,16 +69,11 @@ const Main = (props) => {
     // const roomName = roomRef.current.value;
     // const userName = userRef.current.value;
     const { roomName, userName } = values
-    console.log("details:",values);
     if (!roomName || !userName) {
-      console.log("if part")
       setErr(true);
       setErrMsg('Enter Room Name or User Name');
     } else {
-      console.log("else part")
-      console.log("values : ",values.roomName)
-      console.log("values : ",values.userName)
-      console.log(socket.emit('BE-check-user', { roomId: roomName, userName }));
+      socket.emit('BE-check-user', { roomId: roomName, userName })
     }
   }
   const onFinish = values => {

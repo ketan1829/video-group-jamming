@@ -68,7 +68,7 @@ const BottomBar = ({
     const audioDeviceId = e.key;
     switchAudioSource(audioDeviceId)
     const deviceLabel = audioDevices.filter(audiodev=>{return audiodev.deviceId===audioDeviceId?true:false})[0].label
-    message.success(`Switch to "${deviceLabel}"` );
+    message.success(`Switch to "${deviceLabel}"`,100);
   };
 
   const showModal = () => {
@@ -81,8 +81,8 @@ const BottomBar = ({
     setTimeout(() => {
       setLoading(false);
       setOpen(false);
-      message.success(`Invitation link copied to clipboard` );
-    }, 2000);
+      message.success(`Invitation link copied to clipboard`,0.8);
+    }, 500);
   };
 
   const handleCancel = () => {
@@ -235,7 +235,7 @@ const BottomBar = ({
                 // </Button>
                 ,
                 <Button
-                  // key="link"
+                  key="link"
                   // href="https://google.com"
                   type="primary"
                   loading={loading}

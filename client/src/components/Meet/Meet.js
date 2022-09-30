@@ -53,17 +53,14 @@ const Meet = (props) => {
   const { Header, Content, Footer } = Layout;
 
 
-    // nc
-    const [audioDevices, setAudioDevices] = useState([]);
-    const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState(0);
-    const [showAudioDevices, setShowAudioDevices] = useState(false);
+  // nc
+  const [audioDevices, setAudioDevices] = useState([]);
+  const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState(0);
+  const [showAudioDevices, setShowAudioDevices] = useState(false);
 
 
   useEffect(() => {
     // nc
-    //set url 
-    console.log(window.location.href)
-    // Get Video-Audio Devices
     function setToStart(){
     
       const getSetDevices = () => {
@@ -72,10 +69,10 @@ const Meet = (props) => {
           const uniqueDevices = [];
           const audioDevices = devices.filter((adevice) => adevice.kind === 'audioinput');
           const videoDevices = devices.filter((vdevice) => vdevice.kind === 'videoinput');
-          setAudioDevices(audioDevices)
+          setAudioDevices(audioDevices);
           setVideoDevices(videoDevices);
           setSelectedAudioDeviceId(audioDevices[0].deviceId)
-          console.table(audioDevices)
+          // console.table(audioDevices)
         });
       }
       // nc
@@ -218,6 +215,7 @@ const Meet = (props) => {
       
       // for getting peer stats in 5 second interval
       setInterval(() => {
+        console.log("pinging after 5 seconds",peers);
         if(peers.length){
           peers[0].getStats((err, stats) => {
             stats.forEach((report) => {
@@ -227,15 +225,29 @@ const Meet = (props) => {
             }
             });
           });
+        }else{
+          console.log("else parting")
         }
       }, 5000);
     }
     const _ = sessionStorage.getItem('user') === null?props.history.push("/",{roomId}):setToStart()
 
+
+
+    setInterval(() => {
+
+      if(peers.length){
+      peers[0].getStats((err, stats) => {
+        const _ = err?console.log("stats error : ",err):null;
+        console.log("stats : ",stats)
+      })
+    }
+    }, 5000);
+
     return () => {
       // socket.disconnect();
     };
-    // eslint-disable-next-line
+
   }, []);
 
 
@@ -286,13 +298,12 @@ const Meet = (props) => {
       initiator: true,
       trickle: false,
       stream,
-      iceRestart: true
-      // // wrtc: { RTCPeerConnection }
+      iceRestart: true,
+      // wrtc: { RTCPeerConnection }
 
     });
 
     peer.on('signal', (signal) => {
-      console.log("peer signaling....")
       socket.emit('BE-call-user', {
         userToCall: userId,
         from: caller,
@@ -311,6 +322,11 @@ const Meet = (props) => {
     peer.on('close',()=>{
       removePeer(peer)
     })
+
+    peer.getStats((err, report) => {
+      console.log('report', report)
+      // setReport(report)
+    });
 
     return peer;
   }
@@ -409,9 +425,6 @@ const Meet = (props) => {
   };
 
   const toggleCameraAudio = (e) => {
-
-    console.log("EVENT", e)
-
     const target = e // .target.getAttribute('data-switch');
 
     setUserVideoAudio((preList) => {
@@ -542,15 +555,6 @@ const Meet = (props) => {
 
   // setInterval(() => {
 
-  //   // const peer = new Peer({
-  //   //   initiator: false,
-  //   //   trickle: false,
-  //   // });
-
-
-  //   // console.log("PEERS INT", peers)
-
-    
   //   if(peers.length){
   //   peers[0].getStats((err, stats) => {
   //     let statsOutput = "";
@@ -563,7 +567,7 @@ const Meet = (props) => {
   //     // console.log("report", report)
 
   //     // setReport(prereports=>[...prereports,report])
-  //     setReport(report)
+  //     // setReport(report)
 
   //     // console.log("Audio Round Trip Time (or Latency): ", report.roundTripTime*1000)
 
