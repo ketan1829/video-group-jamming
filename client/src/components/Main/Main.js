@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Layout, Col, Row, Form, Input, Button, Select, Space } from 'antd';
 import BannerAnim, { Element } from 'rc-banner-anim';
 import TweenOne from 'rc-tween-one'
+import { withRouter } from "react-router";
 
 import './Main.css'
 import 'antd/dist/antd.min.css';
@@ -34,8 +35,14 @@ const Main = (props) => {
 
 
   useEffect(() => {
+    const stateData = props.location.state
+    const _ = stateData?form.setFieldsValue({
+      roomName: stateData.roomId,
+      userName : ''
+    }):null;
 
     socket.on('FE-error-user-exist', ({ error }) => {
+      console.log("FE-error-user-exist Evenet fired")
       if (!error) {
         const roomName = roomRef.current;
         const userName = userRef.current;
@@ -47,25 +54,32 @@ const Main = (props) => {
         setErrMsg('User name already exist');
       }
     });
+    socket.on("connect", () => {
+      // const transport = socket.io.engine.transport.name; // in most cases, "polling"
+      // console.log("########### : transport ",transport)
+    
+      // socket.io.engine.on("upgrade", () => {
+      //   const upgradedTransport = socket.io.engine.transport.name; // in most cases, "websocket"
+      //   console.log("########### upgradedTransport : ",upgradedTransport)
+      // });
+  });
   }, [props.history]);
 
-  function clickJoin(values ) {
+  function clickJoin(values) {
     // const roomName = roomRef.current.value;
     // const userName = userRef.current.value;
     const { roomName, userName } = values
-    console.log(roomName, userName);
     if (!roomName || !userName) {
       setErr(true);
       setErrMsg('Enter Room Name or User Name');
     } else {
-      socket.emit('BE-check-user', { roomId: roomName, userName });
+      socket.emit('BE-check-user', { roomId: roomName, userName })
     }
   }
-
   const onFinish = values => {
-    roomRef.current = values.roomName
-    userRef.current = values.userName
-    clickJoin(values)
+    roomRef.current = values.roomName;
+    userRef.current = values.userName;
+    clickJoin(values);
   };
 
   const onReset = () => {
@@ -73,9 +87,10 @@ const Main = (props) => {
   };
 
   const onFill = () => {
+    let r = (Math.random()).toString(36).toUpperCase().substring(2,5);
     form.setFieldsValue({
       roomName: 'Mark',
-      userName: 'KET',
+      userName: r,
     });
   };
 
@@ -103,7 +118,7 @@ const Main = (props) => {
                   ],
                 }}
               >
-                <BgElement
+              <BgElement
                   key="bg"
                   className="bg"
                   style={{
@@ -153,7 +168,8 @@ const Main = (props) => {
             <Form.Item name="roomName" label={<label style={{ color: "white" }}>Room Name</label>} rules={[{ required: true }]} style={{color:'red'}}>
               <Input id="roomName"/>
             </Form.Item>
-            <Form.Item name="userName" label={<label style={{ color: "white" }}>Username</label>} rules={[{ required: true }]}>
+            {/* here user name checking added */}
+            <Form.Item {...err && {help: errMsg,validateStatus: 'error'}} name="userName" label={<label style={{ color: "white" }}>Username</label>} rules={[{ required: true,message:'Please enter your username ;)' }]}>
               <Input id="userName"/>
             </Form.Item>
             {/* <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
@@ -181,8 +197,8 @@ const Main = (props) => {
             </Form.Item>
             <Form.Item {...tailLayout}>
               <Space direction='horizontal'>
-              <Button className="mr-2" style={{backgroundColor:'#ffc701', color:'#333'}} type="primary" htmlType="submit" onClick={clickJoin}>
-                Create Room
+              <Button className="mr-2" style={{backgroundColor:'#ffc701', color:'#333'}} type="primary" htmlType="submit">
+                Create/Join Room
               </Button>
               <Button className="mr-2" htmlType="button" onClick={onReset}>
                 Reset
@@ -255,4 +271,4 @@ const JoinButton = styled.button`
   }
 `;
 
-export default Main;
+export default withRouter(Main);

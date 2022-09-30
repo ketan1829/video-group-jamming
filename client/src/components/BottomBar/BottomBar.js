@@ -40,6 +40,8 @@ const BottomBar = ({
   showVideoDevices,
   setShowVideoDevices,
   SendTimestampMetronome,
+  audioDevices,
+  switchAudioSource
 }) => {
   const handleToggle = useCallback(
     (e) => {
@@ -124,8 +126,10 @@ const BottomBar = ({
   };
 
   const handleMenuClick = (e) => {
-    message.info('Click on menu item.');
-    console.log('click', e);
+    const audioDeviceId = e.key;
+    switchAudioSource(audioDeviceId)
+    const deviceLabel = audioDevices.filter(audiodev=>{return audiodev.deviceId===audioDeviceId?true:false})[0].label
+    message.success(`Switch to "${deviceLabel}"`,100);
   };
 
   const showModal = () => {
@@ -133,11 +137,13 @@ const BottomBar = ({
   };
 
   const handleOk = () => {
+    navigator.clipboard.writeText(window.location.href)
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
       setOpen(false);
-    }, 3000);
+      message.success(`Invitation link copied to clipboard`,0.8);
+    }, 500);
   };
 
   const handleCancel = () => {
@@ -151,28 +157,45 @@ const BottomBar = ({
   const MetroIcon = (props) => <Icon component={MetroSvg} {...props} />;
 
 
-  const menu = (
-    <Menu
-      onClick={handleMenuClick}
-      items={[
-        {
-          label: '1st menu item',
-          key: '1',
-          icon: <UserOutlined />,
-        },
-        {
-          label: '2nd menu item',
-          key: '2',
-          icon: <UserOutlined />,
-        },
-        {
-          label: '3rd menu item',
-          key: '3',
-          icon: <UserOutlined />,
-        },
-      ]}
-    />
-  );
+  // const menu = (
+  //   <Menu
+  //     onClick={handleMenuClick}
+  //     items={[
+  //       {
+  //         label: '1st menu item',
+  //         key: '1',
+  //         icon: <AudioOutlined />,
+  //       },
+  //       {
+  //         label: '2nd menu item',
+  //         key: '2',
+  //         icon: <AudioOutlined />,
+  //       },
+  //       {
+  //         label: '3rd menu item',
+  //         key: '3',
+  //         icon: <AudioOutlined />,
+  //       },
+  //     ]}
+  //   />
+  // );
+
+  const menu = (<Menu onClick={handleMenuClick} items={audioDevices.map(audiodevice=>{
+      return {
+        label:audiodevice.label,
+        key: audiodevice.deviceId,
+        icon: <AudioOutlined />
+      }})}/>)
+
+  // const menu = audioDevices.map(audiodevice=>{
+  //   return {
+  //             label:audiodevice.label,
+  //             key: audiodevice.deviceId,
+  //             icon: <AudioOutlined />,
+  //           }
+  // })
+
+  // console.log("menu",menu)
 
 
   // Metronome --------------------------------------------
@@ -392,18 +415,16 @@ const BottomBar = ({
             <Modal
               open={open}
               title="Invite Participants"
-              onOk={handleOk}
+              // onOk={handleOk}
               onCancel={handleCancel}
               footer={[
-                <Button key="back" onClick={handleCancel}>
-                  Return
-                </Button>,
+                <Button key="back" onClick={handleCancel}>close</Button>,
                 // <Button key="submit" type="primary" loading={loading} onClick={handleOk}>
                 //   Submit
                 // </Button>
                 ,
                 <Button
-                  // key="link"
+                  key="link"
                   // href="https://google.com"
                   type="primary"
                   loading={loading}
@@ -413,7 +434,7 @@ const BottomBar = ({
                 </Button>,
               ]}
               >
-              <p>Some contents...</p>
+              <p>{window.location.href}</p>
             </Modal>
 
 
@@ -469,7 +490,7 @@ const BottomBar = ({
             <Button ghost icon={<UsergroupAddOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px'}} onClick={showModal}/>
 
             
-            <Modal
+            {/* <Modal
               open={open}
               title="Invite Participants"
               onOk={handleOk}
@@ -494,7 +515,7 @@ const BottomBar = ({
               ]}
               >
               <p>Some contents...</p>
-            </Modal>
+            </Modal> */}
 
 
             {/* <Badge size="small" placement="start" count={isActiveAud?"x":null}>  */}
