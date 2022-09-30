@@ -55,7 +55,7 @@ export const useMetronome = (
         console.log("BEEP");
       }
 
-      if (beat === beatsPerMeasure) {
+      if (beat === parseInt(beatsPerMeasure)) {
         beat = FIRST_BEAT;
       } else {
         beat++;

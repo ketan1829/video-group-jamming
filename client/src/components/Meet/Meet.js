@@ -361,7 +361,7 @@ const Meet = (props) => {
   
 
   const SendTimestampMetronome = (metroData) => {
-    console.log("DATA", metroData)
+    console.log("DATA", metroData, "roomId", roomId)
     socket.emit('BE-metronome', { roomId, metroData });
   }
 
@@ -481,9 +481,9 @@ const Meet = (props) => {
       statsOutput += `<h2>Report: ${report.type}</h2>\n<strong>ID:</strong> ${report.id}<br>\n` +
           `<strong>Timestamp:</strong> ${report.timestamp}<br>\n`;
         // console.log("Type", report.type, "report.timestamp", report.timestamp)
-      console.log("report", report)
+      // console.log("report", report)
       // setReport(report)
-      console.log("Audio Round Trip Time (or Latency): ", report.roundTripTime*1000)
+      // console.log("Audio Round Trip Time (or Latency): ", report.roundTripTime*1000)
 
       }
       });

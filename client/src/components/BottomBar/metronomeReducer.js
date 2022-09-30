@@ -1,12 +1,13 @@
 export const INITIAL_STATE = {
     isPlaying: false,
-    count: 0,
-    bpm: 100,
+    count: 4,
+    bpm: 120,
     beatsPerMeasure: 4,
     
   }
 
 export const metronomeReducer = (state, action) => {
+    console.log("PAYLOAD", action.payload)
     switch (action.type) {
         case "CHANGE_INPUT":
             return{
