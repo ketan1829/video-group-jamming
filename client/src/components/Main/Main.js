@@ -95,13 +95,13 @@ const Main = (props) => {
   };
 
   return (
-    <Layout>
+    <Layout style={{height:'100vh'}}>
       <Header className='ant-layout-header' style={{background: 'rgba(31,37, 58, 1)'}}>
         <div className="logo">
           <img src={"https://choira.io/static/media/choria.02aeae5c.svg"} alt="Choira logo" style={{paddingBottom:"50px"}} />
         </div>
       </Header>
-      <Layout style={{background: 'rgba(31,37, 58, 1)', minHeight:'670px'}}>
+      <Layout style={{background: 'rgba(31,37, 58, 1)'}}>
         <Content className='content'>
         <Row justify="space-around"  > 
           <Col flex={3}>
@@ -215,10 +215,11 @@ const Main = (props) => {
         </Content>
       </Layout>
       <Footer style={{
+        backgroundColor:'rgba(31,37, 58, 1)',
         textAlign: 'center',
-        position: 'sticky',
       }}>
-        Created with 🖤  by Choira ©2022</Footer>
+        <Content style={{color:'white',fontSize:'12px'}} >Created with 💙  by Choira ©2022</Content>
+        </Footer>
     </Layout>
   );
 };

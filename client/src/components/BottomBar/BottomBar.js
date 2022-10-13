@@ -129,7 +129,7 @@ const BottomBar = ({
     const audioDeviceId = e.key;
     switchAudioSource(audioDeviceId)
     const deviceLabel = audioDevices.filter(audiodev=>{return audiodev.deviceId===audioDeviceId?true:false})[0].label
-    message.success(`Switch to "${deviceLabel}"`,100);
+    message.success(`Switch to "${deviceLabel}"`,0.6);
   };
 
   const showModal = () => {
@@ -361,7 +361,7 @@ const BottomBar = ({
     }
   }
 
-  console.log("GLOBAL DAATA", state)
+  // console.log("GLOBAL DAATA", state)
 
 
   return (
