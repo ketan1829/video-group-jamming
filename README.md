@@ -1,6 +1,6 @@
-# Video-Group-Jamming
+# Music-Jamming
 
-Videe-Group-Jamming is a simple video jam application for multi-users based on React, Node Express and WebRTC.
+Music-Jamming is a simple Video jam application for multi-users based on React, Node Express and WebRTC.
 
 This project is **deployed** locally
 
@@ -11,7 +11,7 @@ This project is **deployed** locally
 - WebRTC
 - Socket.io
 - [Syled-components](https://styled-components.com/)
-- Ant Design
+- Ant Design (https://ant.design)
 - [Simple-peer](https://github.com/feross/simple-peer)
 
 
@@ -19,12 +19,12 @@ This project is **deployed** locally
 
 ## Features
 
-- Join a room
+- Create/ Join a room with Validations
 - Video Streaming
 - Metronome
-- Text chat
+- Multiple Audio input's
 - Mute Video/Audio
-- Screen Sharing
+- Stats of users
 
 ## Installation
 ### Clone
@@ -51,13 +51,15 @@ This project is **deployed** locally
     npm install
     
     /* Run */
-    npm run dev
+    nodemon server.js
   </code>
 </pre>
 
 ## Todo 🔨🔨🔨
 
-- [x] Switch Camera options
+- [x] Dynamic user Video card (for more then 2 users)
+- [x] Improve Metronome UI + Functionality
+- [x] UI
 
 ## License
 [MIT License](./LICENSE)
