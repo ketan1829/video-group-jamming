@@ -11,7 +11,7 @@ This project is **deployed** locally
 - WebRTC
 - Socket.io
 - [Syled-components](https://styled-components.com/)
-- Ant Design (https://ant.design)
+- [Ant Design] (https://ant.design)
 - [Simple-peer](https://github.com/feross/simple-peer)
 
 
