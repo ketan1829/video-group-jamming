@@ -246,18 +246,18 @@ const Meet = (props) => {
         peersRef.current.forEach(({ peerID, userName, peer }, index) => {
 
           let peerStats = {};
-          peer.getStats((err, stats) => {
+          peer?.getStats((err, stats) => {
             const _ = err ? console.log("stats error : ", err) : null;
-            
+
             stats.forEach((stats_report) => {
               if (stats_report.kind === "video" && stats_report.type === "remote-inbound-rtp") {
                 peerStats['rtt'] = stats_report.roundTripTime
-                const newOne = {[userName]: peerStats};
+                const newOne = { [userName]: peerStats };
                 setStatsReport(pre_reports => ({ ...pre_reports, ...newOne }))
               }
-              else if(stats_report.kind === "video" && stats_report.framesPerSecond){
+              else if (stats_report.kind === "video" && stats_report.framesPerSecond) {
                 peerStats['fps'] = stats_report.framesPerSecond
-                const newOne = {[userName]: peerStats};
+                const newOne = { [userName]: peerStats };
                 setStatsReport(pre_reports => ({ ...pre_reports, ...newOne }))
               }
             })
@@ -345,14 +345,28 @@ const Meet = (props) => {
   function createPeer(userId, caller, stream) {
     const peer = new Peer({
       initiator: true,
+      objectMode: true,
       trickle: false,
       stream,
-      iceRestart: true,
+      // iceRestart: true,
+      // config: {
+        iceServers:
+        [
+          { urls: 'stun:global.stun.twilio.com:3478?transport=udp' },
+          {
+            urls: 'turn:openrelay.metered.ca:80',
+            username: 'openrelayproject',
+            credentials: 'openrelayproject'
+          },
+        ]
+      // }
       // wrtc: { RTCPeerConnection }
 
     });
 
     peer.on('signal', (signal) => {
+
+      console.log("signallllllllllllllllllllll 1");
       socket.emit('BE-call-user', {
         userToCall: userId,
         from: caller,
@@ -361,21 +375,20 @@ const Meet = (props) => {
     });
 
     peer.on('disconnect', () => {
+      console.log("disconnectttttttttttttttt");
       removePeer(peer)
     });
 
     peer.on('error', (error) => {
+      console.log("errorrrrrrrrrrrrrrrrrrrrrr ", error);
       removePeer(peer)
     })
 
     peer.on('close', () => {
-      removePeer(peer)
-    })
+      console.log("closeeeeeeeeeeeeeeeeeeeeeeeeeeee ");
+      removePeer(peer);
 
-    peer.getStats((err, report) => {
-      console.log('report', report)
-      // setReport(report)
-    });
+    })
 
     return peer;
   }
@@ -385,14 +398,40 @@ const Meet = (props) => {
       initiator: false,
       trickle: false,
       stream,
-      config: {
-        'iceServers': [{
-          'urls': 'stun:stun.l.google.com:19302'
-        }]
-      }
+      iceServers:
+        [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:global.stun.twilio.com:3478?transport=udp' },
+          {
+            urls: "stun:openrelay.metered.ca:80",
+          },
+          {
+            urls: 'turn:openrelay.metered.ca:80',
+            username: 'openrelayproject',
+            credentials: 'openrelayproject'
+          },
+          {
+            urls: 'turn:openrelay.metered.ca:80?transport=tcp',
+            username: 'openrelayproject',
+            credentials: 'openrelayproject'
+          },
+          {
+            urls: 'turn:openrelay.metered.ca:443',
+            username: 'openrelayproject',
+            credentials: 'openrelayproject'
+          },
+          {
+            urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+            username: 'openrelayproject',
+            credentials: 'openrelayproject'
+          }
+        ],
+      config: {}
     });
 
     peer.on('signal', (signal) => {
+      console.log("signallllllllllllllllllllll 2");
+
       socket.emit('BE-accept-call', { signal, to: callerId });
     });
 
@@ -400,6 +439,17 @@ const Meet = (props) => {
       console.log("Ok peer dissconnected ")
       peer.destroy();
     });
+
+    peer.on('error', (error) => {
+      console.log("errorrrrrrrrrrrrrrrrrrrrrr 2");
+
+      removePeer(peer)
+    })
+
+    peer.on('close', () => {
+      console.log("closeeeeeeeeeeeeeeeeeeeeeeeeeeee 2");
+      removePeer(peer)
+    })
 
     peer.signal(incomingSignal);
 
@@ -630,8 +680,6 @@ const Meet = (props) => {
 
   const navItems = [{ key: 1, label: "Home" }, { key: 2, label: "Jam" }]
 
-
-
   // nc
   const switchAudioSource = (audioDeviceId) => {
 
@@ -666,7 +714,7 @@ const Meet = (props) => {
 
   useEffect(() => {
 
-    console.log("Reports chnaged : ", statsReport)
+    // console.log("Reports chnaged : ", statsReport)
     return () => { }
   }, [statsReport])
 
@@ -675,10 +723,10 @@ const Meet = (props) => {
   // main return
   return (
     <>
-      <Layout style={{height:'100vh'}}>
+      <Layout style={{ height: '100vh' }}>
         <Header className='header'>
           <div className="logo">
-            <img src={"https://choira.io/static/media/choria.02aeae5c.svg"} alt="Choira logo" style={{ paddingBottom: "50px" }} />
+            <img src={"https://i.ibb.co/pRNQHmZ/choria-96439620.png"} alt="Choira logo" style={{ paddingBottom: "50px" }} />
           </div>
           {/* <Menu
         theme="light"
@@ -699,66 +747,59 @@ const Meet = (props) => {
         </Header>
 
         {/* <Layout > */}
-          <Content
-            style={{
-              padding: '30px 80px',
-              
-              backgroundColor: 'rgba(31,37, 58, 1)'
-            }}
-          >
-            {/* <Divider/> */}
+        <Content className='main_container'>
+          {/* <Divider/> */}
 
-            <div className='VidContainer'>
+          <div className='VidContainer'>
 
-              <Row gutter={[8, 2]} >
-                <Col span={peers?.length == 0 ?24:12}>
-                  <Badge.Ribbon text="(Me) ♛" placement="start" color="gold">
-                    <video
-                      className='myvideo'
-                      onClick={expandScreen}
-                      ref={userVideoRef}
-                      // height="100%"
-                      // width="100%"
-                      style={{
-                        height:peers?.length > 1?"calc(100vh - 475px)":"calc(100vh - 230px)",
-                        
-                      }}
+            <Row gutter={[8, 2]}>
+              <Col xl={peers?.length == 0 ? 24 : 12} sm={12}>
+                <Badge.Ribbon text="(Me) ♛" placement="start" color="gold">
+                  <video
+                    className='myvideo'
+                    onClick={expandScreen}
+                    ref={userVideoRef}
+                    // height="100%"
+                    // width="100%"
+                    style={{
+                      height: peers?.length > 1 ? "calc(100vh - 475px)" : "calc(100vh - 230px)",
+                    }}
 
-                      muted
-                      autoPlay
-                    // playInline
-                    ></video>
-                  </Badge.Ribbon>
-                </Col>
+                    muted
+                    autoPlay
+                  // playInline
+                  ></video>
+                </Badge.Ribbon>
+              </Col>
 
-                {/* <Row justify="space-around"> */}
-                {
-                  Object.keys(peers).length > 0 &&
-                  peers.map((peer, index, arr) =>
-                    // <Col key={peer.userName} span={peers?.length===3?12:(index+1)%2===0?24:12} >
-                    <Col key={peer.userName} span={index === 1?24:12}>
-                      <Badge count={Object.keys(statsReport).length? `RTT ${statsReport[peer.userName]?.rtt * 1000} ms` : 'RTT:N/A'} style={{ color: "green", backgroundColor: "white", marginRight: 50, marginTop: 20 }} size="small" >
-                        <Badge count={Object.keys(statsReport).length?`FPS ${statsReport[peer.userName]?.fps}`:'FPS N/A'} style={{color:"green", backgroundColor:"white", marginRight:50,marginTop:40}} size="small" >
+              {/* <Row justify="space-around"> */}
+              {
+                Object.keys(peers).length > 0 &&
+                peers.map((peer, index, arr) =>
+                  // <Col key={peer.userName} span={peers?.length===3?12:(index+1)%2===0?24:12} >
+                  <Col key={peer.userName} span={index === 1 ? 24 : 12}>
+                    <Badge count={Object.keys(statsReport).length ? `RTT ${statsReport[peer.userName]?.rtt * 1000} ms` : 'RTT:N/A'} style={{ color: "green", backgroundColor: "white", marginRight: 50, marginTop: 20 }} size="small" >
+                      <Badge count={Object.keys(statsReport).length ? `FPS ${statsReport[peer.userName]?.fps}` : 'FPS N/A'} style={{ color: "green", backgroundColor: "white", marginRight: 50, marginTop: 40 }} size="small" >
                         <Badge.Ribbon text={peer?.userName} placement="start" color="blue" id="userBadge">
                           <VideoCard peer={peer} number={arr.length} index={index} />
                         </Badge.Ribbon>
                       </Badge>
-                      </Badge>
-                    </Col>
-                  )
-                }
+                    </Badge>
+                  </Col>
+                )
+              }
 
-              </Row>
+            </Row>
 
-            </div>
+          </div>
 
-            {/* <Row gutter={[8, 8]}>
+          {/* <Row gutter={[8, 8]}>
               <Col span={12} />
               <Col span={12} />
             </Row> */}
 
-            
-            {/* <Row style={{ backgroundColor: 'gold', }}>
+
+          {/* <Row style={{ backgroundColor: 'gold', }}>
         <Col flex="1 1 200px">
           <div >Video</div>
         </Col>
@@ -766,7 +807,7 @@ const Meet = (props) => {
     </Row> */}
 
 
-          </Content>
+        </Content>
 
         {/* </Layout> */}
 
@@ -777,24 +818,24 @@ const Meet = (props) => {
     >
       Created by Choira
     </Footer> */}
-    <Footer style={{'backgroundColor':'rgba(31,37, 58, 1)'}}>
-            <BottomBar
-              clickScreenSharing={clickScreenSharing}
-              clickChat={clickChat}
-              clickCameraDevice={clickCameraDevice}
-              goToBack={goToBack}
-              toggleCameraAudio={toggleCameraAudio}
-              userVideoAudio={userVideoAudio['localUser']}
-              screenShare={screenShare}
-              videoDevices={videoDevices}
-              showVideoDevices={showVideoDevices}
-              setShowVideoDevices={setShowVideoDevices}
-              audioDevices={audioDevices}
-              switchAudioSource={switchAudioSource}
-              SendTimestampMetronome={SendTimestampMetronome}
+        <Footer style={{ 'backgroundColor': 'rgba(31,37, 58, 1)' }}>
+          <BottomBar
+            clickScreenSharing={clickScreenSharing}
+            clickChat={clickChat}
+            clickCameraDevice={clickCameraDevice}
+            goToBack={goToBack}
+            toggleCameraAudio={toggleCameraAudio}
+            userVideoAudio={userVideoAudio['localUser']}
+            screenShare={screenShare}
+            videoDevices={videoDevices}
+            showVideoDevices={showVideoDevices}
+            setShowVideoDevices={setShowVideoDevices}
+            audioDevices={audioDevices}
+            switchAudioSource={switchAudioSource}
+            SendTimestampMetronome={SendTimestampMetronome}
 
-            />
-    </Footer>
+          />
+        </Footer>
 
       </Layout>
 

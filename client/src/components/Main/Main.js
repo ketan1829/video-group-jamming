@@ -96,13 +96,29 @@ const Main = (props) => {
 
   return (
     <Layout style={{height:'100vh'}}>
-      <Header className='ant-layout-header' style={{background: 'rgba(31,37, 58, 1)'}}>
+      
+      <video autoPlay muted loop id="bgvideo"style={{opacity:0.25, backgroundBlendMode:'darken'}}>
+        <source src='https://static.videezy.com/system/resources/previews/000/019/515/original/Mikro2.mp4' type='video/mp4'/>
+      </video>
+      <Header className='ant-layout-header' style={{background: 'rgba(31,37, 58, .97)'}}>
         <div className="logo">
-          <img src={"https://choira.io/static/media/choria.02aeae5c.svg"} alt="Choira logo" style={{paddingBottom:"50px"}} />
+          <img src={"https://i.ibb.co/pRNQHmZ/choria-96439620.png"} alt="Choira logo" style={{paddingBottom:"50px"}} />
         </div>
       </Header>
-      <Layout style={{background: 'rgba(31,37, 58, 1)'}}>
+      <Layout style={{background: 'rgba(31,37, 58, .97)'}}>
+        {/* <div style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+          }}> */}
+          {/* <video id="background-video" autoPlay={true} loop muted width="100%" height="50%" style={{position: 'fixed', height: '80vh', width: '100vw',left: 0, right: 0, objectFit:'cover', objectPosition:'100% 0', opacity:0.25, backgroundBlendMode:'darken'}}>
+            
+            <source src='https://static.videezy.com/system/resources/previews/000/019/515/original/Mikro2.mp4' type='video/mp4'/>
+          </video> */}
+        {/* </div> */}
         <Content className='content'>
+        
         <Row justify="space-around"  > 
           <Col flex={3}>
           <div className='banner'>
@@ -215,7 +231,7 @@ const Main = (props) => {
         </Content>
       </Layout>
       <Footer style={{
-        backgroundColor:'rgba(31,37, 58, 1)',
+        backgroundColor:'rgba(31,37, 58, .97)',
         textAlign: 'center',
       }}>
         <Content style={{color:'white',fontSize:'12px'}} >Created with 💙  by Choira ©2022</Content>

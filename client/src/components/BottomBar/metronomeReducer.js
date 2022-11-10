@@ -1,5 +1,5 @@
 export const INITIAL_STATE = {
-    isPlaying: false,
+    isPlaying: true,
     count: 4,
     bpm: 120,
     beatsPerMeasure: 4,
@@ -23,7 +23,7 @@ export const metronomeReducer = (state, action) => {
         //     };
         case "PLAYING":
             return{
-                ...state, isPlaying: !action.payload.isPlaying
+                ...state, isPlaying: action.payload.isPlaying
             };
         default: 
             return state

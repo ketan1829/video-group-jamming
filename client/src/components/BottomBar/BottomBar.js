@@ -105,7 +105,13 @@ const BottomBar = ({
       for (var key in metroData) {
         if (metroData.hasOwnProperty(key)) {
             console.log(key + " -> " + metroData[key]);
-            dispatch({type: "CHANGE_INPUT", payload: { name: key , value: metroData[key] }})
+            if (key !== "isPlaying") {
+              dispatch({type: "CHANGE_INPUT", payload: { name: key , value: metroData[key] }})
+              // dispatch({type: "PLAYING", payload: { 'isPlaying': true }})
+            } else if (key === "isPlaying") {
+              // dispatch({type: "PLAYING", payload: { name: key , value: metroData[key] }})
+              dispatch({type: "PLAYING", payload: { 'isPlaying': metroData[key] }})
+            }
       }
     }
 
@@ -224,9 +230,11 @@ const BottomBar = ({
         isPlaying ? stopMetronome() : startMetronome()
       }if(data.hasOwnProperty('count')){
         console.log("PLAAaaa count", count);
+        // stopMetronome()
         if(data.count>=4 || data.count <=7){
           console.log("Setting count");
           setBeatsPerMeasure(count)
+          // stopMetronome()
         }
       }
 
@@ -262,7 +270,7 @@ const BottomBar = ({
       if(count>=4 || count<=7){
         setBpm(count)
         handleSendMetronome({count})
-        // startMetronome()
+        // stopMetronome()
       }else{
         setBpm(100)
       }
@@ -386,7 +394,7 @@ const BottomBar = ({
           {/* <GoldOutlined  style={{ fontSize: '40px', alignContent:'center'}}  /> */}
             {/* Start MetroNome */}
             <div className="counter"></div>
-            <Button ghost icon={ state.isPlaying ? <BorderOutlined /> : <CaretRightOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px', fontSize: '40px'}} onClick={ handleMetroPlayStop }  />
+            <Button ghost icon={ !state.isPlaying ? <BorderOutlined /> : <CaretRightOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px', fontSize: '40px'}} onClick={ handleMetroPlayStop }  />
 
             {/* BPM input */}
 
@@ -442,28 +450,19 @@ const BottomBar = ({
             {/* <SwitchMenu onClick={handleToggle}>
               <i className='fas fa-angle-up'></i>
             </SwitchMenu> */}
-            <Button ghost onClick={()=>{toggleCameraAudio('audio');setIsActiveAud(!isActiveAud)}} className='btn active' >
-              {/* <Button ghost> */}
-              <Space span={2}>
-              {!isActiveAud ? <AudioOutlined />:<AudioMutedOutlined />}
-            <Dropdown overlay={menu} placement="topLeft" arrow trigger={['click']} >
-              <EllipsisOutlined rotate='90' />
-            </Dropdown>
-              </Space>
-              {/* </Button> */}
-            </Button>
+            
             {/* </Badge> */}
 
-            <Badge size="small" count={isActiveVid?"x":null}> 
-            <Button ghost icon={<VideoCameraOutlined />} onClick={()=>{toggleCameraAudio('video');setIsActiveVid(!isActiveVid)}} size="middle"  />
+            {/* <Badge size="small" count={isActiveVid?"x":null}>  */}
+            {/* <Button ghost icon={<VideoCameraOutlined />} onClick={()=>{toggleCameraAudio('video');setIsActiveVid(!isActiveVid)}} size="middle"  /> */}
               {/* <VideoCameraOutlined /> */}
             {/* </Button> */}
-            </Badge>
+            {/* </Badge> */}
             {/* <Button type='primary' ml-4>chat</Button> */}
             </Space>
           </Col>
           <Col span={12}>
-            <Button type='primary' style={{backgroundColor:'#ffc701', color:'#333'}}>record</Button>
+            {/* <Button type='primary' style={{backgroundColor:'#ffc701', color:'#333'}}>record</Button> */}
           </Col>
 
 
@@ -480,7 +479,7 @@ const BottomBar = ({
 
 
           <Col span={6}>
-            <Button type="primary" danger onClick={goToBack} >End Jam</Button>
+            {/* <Button type="primary" danger onClick={goToBack} >End Jam</Button> */}
           </Col>
           <Col span={10} >
             <Space span={2}>
@@ -543,7 +542,8 @@ const BottomBar = ({
             </Space>
           </Col>
           <Col span={6}>
-            <Button type='primary' style={{backgroundColor:'#ffc701', color:'#333'}}>chatt</Button>
+            {/* <Button type='primary' style={{backgroundColor:'#ffc701', color:'#333'}}>chatt</Button> */}
+            <Button type="primary" danger onClick={goToBack} >End Jam</Button>
           </Col>
 
 
