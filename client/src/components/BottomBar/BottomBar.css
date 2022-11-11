@@ -157,6 +157,7 @@ input[type="number"] {
   padding-bottom: 10px;
   background: lighten(#333, 5%);
   text-align: center;
+  /* display: flex; */
 }
   
   .dot {

@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState, useEffect, useReducer } from 'react';
-import { Button, Col, Divider, Row, Space, Badge, Card, InputNumber, Dropdown, Menu, message, Modal, Input, Tooltip } from 'antd';
+import { Button, Col, Divider, Row, Space, Badge, Card, InputNumber, Dropdown, Menu, message, Modal, Input, Tooltip, Typography } from 'antd';
 import Icon, {
   AudioOutlined,
   VideoCameraOutlined,
@@ -26,6 +26,8 @@ import './BottomBar.css'
 import {INITIAL_STATE, metronomeReducer} from './metronomeReducer'
 import socket from '../../socket';
 
+
+const { Title } = Typography;
 
 
 const BottomBar = ({
@@ -223,19 +225,24 @@ const BottomBar = ({
     if(data){
       if(data.bpm>=60 || data.bpm<=260){
         setBpm(bpm)
+        setBeatsPerMeasure(state.count)
         // isPlaying ? stopMetronome() : startMetronome()
         // startMetronome()
       }if(data.hasOwnProperty('isPlaying')){
         console.log("PLAAaaa", isPlaying);
         isPlaying ? stopMetronome() : startMetronome()
+        setBpm(state.bpm)
+        setBeatsPerMeasure(state.count)
       }if(data.hasOwnProperty('count')){
         console.log("PLAAaaa count", count);
         // stopMetronome()
-        if(data.count>=4 || data.count <=7){
-          console.log("Setting count");
-          setBeatsPerMeasure(count)
+        // if(data.count>=4 || data.count <=7){
+        console.log("Setting count");
+        setBpm(state.bpm)
+        setBeatsPerMeasure(data.count)
+        // state.isPlaying ? stopMetronome() : startMetronome()
           // stopMetronome()
-        }
+        // }
       }
 
       // isPlaying ? stopMetronome() : startMetronome()
@@ -268,8 +275,10 @@ const BottomBar = ({
     }else if (name=== "count") {
       const count = value;
       if(count>=4 || count<=7){
-        setBpm(count)
+        setBpm(state.bpm)
+        setBeatsPerMeasure(count)
         handleSendMetronome({count})
+        // console.log("SENDING --- 278", {count})
         // stopMetronome()
       }else{
         setBpm(100)
@@ -283,8 +292,8 @@ const BottomBar = ({
     // console.log("Metro Play Stop", value)
     if(bpm>=60 || bpm<=260){
       // setBpm(bpm)
-      isTicking ? stopMetronome() : startMetronome()
       handleSendMetronome({isPlaying:isTicking})
+      isTicking ? stopMetronome() : startMetronome()
       dispatch({type: "PLAYING", payload: { 'isPlaying': isTicking }})
       // startMetronome()
     }else{
@@ -382,20 +391,20 @@ const BottomBar = ({
       
         {/* Metronome */}
 
-        <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} className='gutter-box' justify='end'>
+        <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} className='gutter-box' justify='end' style={{display:'flex'}} >
 
 
           {/* <Col span={6}>
             <Button type="primary" danger onClick={goToBack} >End Jam</Button>
           </Col> */}
-          <Col span={11} >
+          <Col span={11}>
             <Space span={3}>
             
           {/* <GoldOutlined  style={{ fontSize: '40px', alignContent:'center'}}  /> */}
             {/* Start MetroNome */}
             <div className="counter"></div>
+            <Title level={5}>Play</Title>
             <Button ghost icon={ !state.isPlaying ? <BorderOutlined /> : <CaretRightOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px', fontSize: '40px'}} onClick={ handleMetroPlayStop }  />
-
             {/* BPM input */}
 
             {/* <Input.Group compact>
