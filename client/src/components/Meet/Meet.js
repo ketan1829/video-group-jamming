@@ -64,7 +64,7 @@ const Meet = (props) => {
 
 
 
-    
+
     const _ = sessionStorage.getItem('user') === null ? props.history.push("/", { roomId }) : setToStart()
 
     const statsIntervals = setInterval(() => {
@@ -112,6 +112,7 @@ const Meet = (props) => {
   // nc
   function setToStart() {
 
+    // to list the devices
     const getSetDevices = () => {
       navigator.mediaDevices.enumerateDevices().then((devices) => {
         // nc
@@ -160,6 +161,7 @@ const Meet = (props) => {
     // Connect Camera & Mic
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
       getSetDevices()
+      console.log("stream ==========>",stream);
       userVideoRef.current.srcObject = stream; // local
       userStream.current = stream;
 
@@ -194,7 +196,7 @@ const Meet = (props) => {
                 [peer.userName]: { video, audio },
               };
             });
-            console.log("peers pushed", temp_peers)
+            // console.log("peers pushed", temp_peers)
 
           }
         });
@@ -264,23 +266,6 @@ const Meet = (props) => {
       });
     });
 
-
-    // for getting peer stats in 5 second interval
-    // setInterval(() => {
-    //   console.log("pinging after 5 seconds",peers);
-    //   if(peers.length){
-    //     peers[0].getStats((err, stats) => {
-    //       stats.forEach((report) => {
-    //       if(report.kind==="video" & report.type==="remote-inbound-rtp"){
-    //         console.log("report",report)
-    //         setReport(report)
-    //       }
-    //       });
-    //     });
-    //   }else{
-    //     console.log("else parting")
-    //   }
-    // }, 5000);
   }
 
   // nc
@@ -350,36 +335,36 @@ const Meet = (props) => {
       objectMode: true,
       trickle: false,
       stream,
-      // iceRestart: true,
+      iceRestart: true,
       config: {
-      iceServers:
-      [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:global.stun.twilio.com:3478?transport=udp' },
-        {
-          urls: "stun:openrelay.metered.ca:80",
-        },
-        {
-          urls: 'turn:openrelay.metered.ca:80',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
-        },
-        {
-          urls: 'turn:openrelay.metered.ca:80?transport=tcp',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
-        },
-        {
-          urls: 'turn:openrelay.metered.ca:443',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
-        },
-        {
-          urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
-        }
-      ]
+        iceServers:
+          [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:global.stun.twilio.com:3478?transport=udp' },
+            {
+              urls: "stun:openrelay.metered.ca:80",
+            },
+            {
+              urls: 'turn:openrelay.metered.ca:80',
+              username: 'openrelayproject',
+              credential: 'openrelayproject'
+            },
+            {
+              urls: 'turn:openrelay.metered.ca:80?transport=tcp',
+              username: 'openrelayproject',
+              credential: 'openrelayproject'
+            },
+            {
+              urls: 'turn:openrelay.metered.ca:443',
+              username: 'openrelayproject',
+              credential: 'openrelayproject'
+            },
+            {
+              urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+              username: 'openrelayproject',
+              credential: 'openrelayproject'
+            }
+          ]
       }
       // wrtc: { RTCPeerConnection }
 
@@ -419,35 +404,36 @@ const Meet = (props) => {
       initiator: false,
       trickle: false,
       stream,
-      iceServers:
-        [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:global.stun.twilio.com:3478?transport=udp' },
-          {
-            urls: "stun:openrelay.metered.ca:80",
-          },
-          {
-            urls: 'turn:openrelay.metered.ca:80',
-            username: 'openrelayproject',
-            credentials: 'openrelayproject'
-          },
-          {
-            urls: 'turn:openrelay.metered.ca:80?transport=tcp',
-            username: 'openrelayproject',
-            credentials: 'openrelayproject'
-          },
-          {
-            urls: 'turn:openrelay.metered.ca:443',
-            username: 'openrelayproject',
-            credentials: 'openrelayproject'
-          },
-          {
-            urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-            username: 'openrelayproject',
-            credentials: 'openrelayproject'
-          }
-        ],
-      config: {}
+      config: {
+        iceServers:
+          [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:global.stun.twilio.com:3478?transport=udp' },
+            {
+              urls: "stun:openrelay.metered.ca:80",
+            },
+            {
+              urls: 'turn:openrelay.metered.ca:80',
+              username: 'openrelayproject',
+              credential: 'openrelayproject'
+            },
+            {
+              urls: 'turn:openrelay.metered.ca:80?transport=tcp',
+              username: 'openrelayproject',
+              credential: 'openrelayproject'
+            },
+            {
+              urls: 'turn:openrelay.metered.ca:443',
+              username: 'openrelayproject',
+              credential: 'openrelayproject'
+            },
+            {
+              urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+              username: 'openrelayproject',
+              credential: 'openrelayproject'
+            }
+          ],
+      }
     });
 
     peer.on('signal', (signal) => {
@@ -508,6 +494,37 @@ const Meet = (props) => {
     return peersRef.current.find((p) => p.peerID === id);
   }
 
+
+  // const stopVideoStream = () => {
+
+  //   navigator.mediaDevices.getUserMedia({ video: { 'deviceId': videoDeviceId},audio:{'deviceId': audioDeviceId} })
+  //     .then((stream) => {
+  //       const newStreamTrack = stream.getTracks().find((track) => track.kind === 'audio');
+
+  //       const oldStreamTrack = userStream.current.getTracks().find((track) => track.kind === 'video');
+
+  //       userStream.current.removeTrack(oldStreamTrack);
+  //       // userStream.current.addTrack(newStreamTrack);
+
+  //       peersRef.current.forEach(({ peer }) => {
+  //         // replaceTrack (oldTrack, newTrack, oldStream);
+  //         peer.replaceTrack(
+  //           oldStreamTrack,
+  //           newStreamTrack,
+  //           userStream.current
+  //         );
+
+  //       });
+  //     }).catch((error) => {
+  //       console.log(error)
+  //     });
+
+  // }
+
+  const stopAudioStream = () => {
+
+  }
+
   // Open Chat
   const clickChat = (e) => {
     e.stopPropagation();
@@ -530,9 +547,12 @@ const Meet = (props) => {
       let audioSwitch = preList['localUser'].audio;
 
       if (target === 'video') {
-        const userVideoTrack = userVideoRef.current.srcObject.getVideoTracks()[0];
+        const userVideoTrack = userVideoRef?.current?.srcObject?.getVideoTracks()[0];
         videoSwitch = !videoSwitch;
         userVideoTrack.enabled = videoSwitch;
+        console.log("userStream : ",userStream);
+        console.log("userVideoRef : ",userVideoRef.current);
+        // const _ = videoSwitch?null:stopVideoStream();
       } else {
         const userAudioTrack = userVideoRef.current.srcObject.getAudioTracks()[0];
         audioSwitch = !audioSwitch;
@@ -655,50 +675,6 @@ const Meet = (props) => {
   };
 
 
-  // console.log("PEERS", peers, time, report)
-
-
-  // setInterval(() => {
-
-  //   if(peers.length){
-  //   peers[0].getStats((err, stats) => {
-  //     let statsOutput = "";
-  //     stats.forEach((report) => {
-  //     // if(report.kind==="video" || report.kind === "audio" & report.type==="remote-inbound-rtp"){
-  //     if(report.kind==="video" || report.kind === "audio" && report.type==="remote-inbound-rtp"){
-  //     // statsOutput += `<h2>Report: ${report.type}</h2>\n<strong>ID:</strong> ${report.id}<br>\n` +
-  //     //     `<strong>Timestamp:</strong> ${report.timestamp}<br>\n`;
-  //       // console.log("Type", report.type, "report.timestamp", report.timestamp)
-  //     // console.log("report", report)
-
-  //     // setReport(prereports=>[...prereports,report])
-  //     // setReport(report)
-
-  //     // console.log("Audio Round Trip Time (or Latency): ", report.roundTripTime*1000)
-
-  //     }
-  //     });
-
-
-  // if(peers.length){
-  // peers[0].getStats((err, stats) => {
-  // let statsOutput = "";
-  // stats.forEach((report) => {
-  // if(report.kind==="video" & report.type==="remote-inbound-rtp"){
-  // statsOutput += `<h2>Report: ${report.type}</h2>\n<strong>ID:</strong> ${report.id}<br>\n` +
-  // `<strong>Timestamp:</strong> ${report.timestamp}<br>\n`;
-  // console.log("Type", report.type, "report.timestamp", report.timestamp)
-  // console.log("report", report)
-  // setReport(report)
-  // console.log("Audio Round Trip Time (or Latency): ", report.roundTripTime*1000)
-
-  //     // console.log("statsOutput", statsOutput)
-  //     // document.querySelector(".stats-box").innerHTML = statsOutput;
-
-  //   });
-  // }
-  // }, 5000);
-
   const navItems = [{ key: 1, label: "Home" }, { key: 2, label: "Jam" }]
 
   // nc
@@ -707,8 +683,7 @@ const Meet = (props) => {
     setSelectedAudioDeviceId(audioDeviceId)
     // const enabledAudio = userVideoRef.current.srcObject.getAudioTracks()[0].enabled;
 
-    navigator.mediaDevices
-      .getUserMedia({ audio: { 'deviceId': audioDeviceId, enabledAudio: true } })
+    navigator.mediaDevices.getUserMedia({ audio: { 'deviceId': audioDeviceId, enabledAudio: true } })
       .then((stream) => {
         const newStreamTrack = stream.getTracks().find((track) => track.kind === 'audio');
 

@@ -57,6 +57,7 @@ const BottomBar = ({
   const [isActiveAud, setIsActiveAud] = useState(false);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [beatmodelopen, setBeatmodelopen] = useState(false);
 
   // Metronome 
   const [metronomeData, setMetronomeData] = useState({
@@ -142,6 +143,10 @@ const BottomBar = ({
 
   const showModal = () => {
     setOpen(true);
+  };
+
+  const showBeatModal = () => {
+    setBeatmodelopen(true);
   };
 
   const handleOk = () => {
@@ -403,7 +408,32 @@ const BottomBar = ({
           {/* <GoldOutlined  style={{ fontSize: '40px', alignContent:'center'}}  /> */}
             {/* Start MetroNome */}
             <div className="counter"></div>
-            <Title level={5}>Play</Title>
+            <Button ghost icon={<UsergroupAddOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px'}} onClick={showBeatModal}/>
+            <Modal
+              open={beatmodelopen}
+              title="Beat Creater"
+              // onOk={handleOk}
+              onCancel={handleCancel}
+              footer={[
+                <Button key="back" onClick={handleCancel}>close</Button>,
+                // <Button key="submit" type="primary" loading={loading} onClick={handleOk}>
+                //   Submit
+                // </Button>
+                ,
+                <Button
+                  key="link"
+                  // href="https://google.com"
+                  type="primary"
+                  loading={loading}
+                  onClick={handleOk}
+                >
+                  Copy Link
+                </Button>,
+              ]}
+              >
+              <p>{window.location.href}</p>
+            </Modal>
+            {/* <Button ghost icon={ !state.isPlaying ? <BorderOutlined /> : <CaretRightOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px', fontSize: '40px'}} onClick={ handleMetroPlayStop }  /> */}
             <Button ghost icon={ !state.isPlaying ? <BorderOutlined /> : <CaretRightOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px', fontSize: '40px'}} onClick={ handleMetroPlayStop }  />
             {/* BPM input */}
 
@@ -426,7 +456,7 @@ const BottomBar = ({
             <InputNumber name="bpm" bordered={false} label={state.bpm} status="warning"  value={state.bpm} style={{color:'gold', width:65}} min={60} max={160} onChange={handleBpmChange('bpm')} />
 
             <InputNumber name="count" bordered={false} status="warning"  value={state.count} style={{color:'gold', width:65}} min={1} max={7} onChange={handleBpmChange('count')} />
-            {/* <Button ghost icon={<UsergroupAddOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px'}} onClick={showModal}/> */}
+            
 
             
             <Modal
