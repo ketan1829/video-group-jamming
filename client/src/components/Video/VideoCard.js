@@ -14,6 +14,7 @@ const VideoCard = (props) => {
       ref.current.srcObject = stream;
     });
     peer.on('track', (track, stream) => {
+      console.log('track got altered');
     });
   }, [peer]);
 
@@ -23,6 +24,7 @@ const VideoCard = (props) => {
       className='PeerContainer'
       playsInline
       autoPlay
+      // onLoadStart={(e)=>{e.target.volume=0.0}}
       ref={ref}
       style={{
         // height:totalPeer > 1?"calc(100vh - 470px)":"calc(100vh - 170px)",

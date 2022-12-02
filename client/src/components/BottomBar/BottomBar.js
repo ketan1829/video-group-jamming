@@ -15,7 +15,12 @@ import Icon, {
   BorderOutlined,
   MinusOutlined,
   PlusOutlined,
+  PlayCircleOutlined, 
+  StopOutlined,
 } from '@ant-design/icons';
+
+import { Song, Track, Instrument } from 'reactronica';
+import BasicPiano from './PianoRoll';
 
 // import { useMetronome } from "react-metronome-hook";
 import { useMetronome } from "./Metronome";
@@ -72,8 +77,10 @@ const BottomBar = ({
 
   
 
-  let click1 = "//daveceddia.com/freebies/react-metronome/click1.wav";
-  let click2 = "//daveceddia.com/freebies/react-metronome/click2.wav";
+  // let click1 = "//daveceddia.com/freebies/react-metronome/click1.wav";
+  // let click2 = "//daveceddia.com/freebies/react-metronome/click2.wav";
+  let click2 = "//assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.mp3";
+  let click1 = "//assets.mixkit.co/sfx/preview/mixkit-message-pop-alert-2354.mp3";
   // click1 = new Audio(click1);
   // click2 = new Audio(click2);
   let timmer = useRef(null)
@@ -94,6 +101,20 @@ const BottomBar = ({
       bpm,
       beatsPerMeasure
     } = useMetronome(state.bpm, state.count, [click1, click2]);
+
+
+    const [beatisPlaying, setBeatIsPlaying] = useState(false);
+    const [currentStepIndex, setCurrentStepIndex] = useState(0);
+    const [steps, setSteps] = useState([
+      ['C3', 'E3', 'A3'],
+      null,
+      ['C3', 'E3', 'G3', 'B3'],
+      null,
+      ['C3', 'F3', 'A3'],
+      null,
+      ['D3', 'G3', 'B3'],
+      null,
+    ]);
 
 
  // u
@@ -161,6 +182,10 @@ const BottomBar = ({
 
   const handleCancel = () => {
     setOpen(false);
+  };
+
+  const handleBeatCancel = () => {
+    setBeatmodelopen(false);
   };
 
   const MetroSvg = () => (
@@ -306,6 +331,26 @@ const BottomBar = ({
     }
   }
 
+  const handleMetroPlayStopLocal = () => {
+    const bpm = state.bpm
+    // console.log("Metro Play Stop", value)
+    if(bpm>=60 || bpm<=260){
+      // setBpm(bpm)
+      // handleSendMetronome({isPlaying:isTicking})
+      // isTicking ? stopMetronome() : startMetronome();handleSendMetronome({isPlaying:isTicking})
+      if(isTicking){
+        stopMetronome()
+      }else{
+        startMetronome()
+        handleSendMetronome({isPlaying:isTicking})
+      }
+      dispatch({type: "PLAYING", payload: { 'isPlaying': isTicking }})
+      // startMetronome()
+    }else{
+      setBpm(100)
+    }
+  }
+
     
     // // console.log("init BPM", bpm)
     // if(metronomeState.isPlaying){
@@ -413,9 +458,9 @@ const BottomBar = ({
               open={beatmodelopen}
               title="Beat Creater"
               // onOk={handleOk}
-              onCancel={handleCancel}
+              onCancel={handleBeatCancel}
               footer={[
-                <Button key="back" onClick={handleCancel}>close</Button>,
+                <Button key="back" onClick={handleBeatCancel}>close</Button>,
                 // <Button key="submit" type="primary" loading={loading} onClick={handleOk}>
                 //   Submit
                 // </Button>
@@ -431,10 +476,38 @@ const BottomBar = ({
                 </Button>,
               ]}
               >
-              <p>{window.location.href}</p>
+              <p>Create Beat</p>
+              {/* <button onClick={() => setBeatIsPlaying(!beatisPlaying)}>
+                {beatisPlaying ? 'Play' : 'Stop'}
+              </button> */}
+
+              <BasicPiano />
+
+              {/* <PianoRoll
+                currentStepIndex={currentStepIndex}
+                onClick={(steps) => setSteps(steps)}
+              /> */}
+
+              {/* Reactronica Components */}
+              {/* <Song beatisPlaying={beatisPlaying}>
+                <Track
+                  steps={steps}
+                  // Callback triggers on every step
+                  onStepPlay={(stepNotes, index) => {
+                    setCurrentStepIndex(index);
+                  }}
+                >
+                  <Instrument type="polySynth" />
+                </Track>
+              </Song> */}
             </Modal>
             {/* <Button ghost icon={ !state.isPlaying ? <BorderOutlined /> : <CaretRightOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px', fontSize: '40px'}} onClick={ handleMetroPlayStop }  /> */}
             <Button ghost icon={ !state.isPlaying ? <BorderOutlined /> : <CaretRightOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px', fontSize: '40px'}} onClick={ handleMetroPlayStop }  />
+            
+            <Button ghost icon={ !state.isPlaying ? <PlayCircleOutlined /> : <StopOutlined />} size="middle" className='btn active' style={{whiteSpace: "normal",width:'50px', fontSize: '40px'}} onClick={ handleMetroPlayStopLocal }  />
+            
+
+            
             {/* BPM input */}
 
             {/* <Input.Group compact>

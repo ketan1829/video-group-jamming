@@ -234,7 +234,7 @@ const Main = (props) => {
         backgroundColor:'rgba(31,37, 58, .97)',
         textAlign: 'center',
       }}>
-        <Content style={{color:'white',fontSize:'12px'}} >Created with 💙  by Choira ©2022</Content>
+        <Content style={{color:'white',fontSize:'12px'}} >Created with 💛  by Choira ©2022</Content>
         </Footer>
     </Layout>
   );

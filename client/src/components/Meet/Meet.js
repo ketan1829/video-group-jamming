@@ -7,7 +7,6 @@ import { useHistory, useParams } from "react-router-dom";
 import { WebRTCStats } from '@peermetrics/webrtc-stats'
 
 
-
 import 'antd/dist/antd.min.css';
 import './Meet.css'
 
@@ -18,6 +17,7 @@ import Chat from '../Chat/Chat';
 
 // => here,need to dig more into this
 import * as process from 'process';
+import { AudioVisu } from '../AudioVisualizer/AudioVisu';
 
 (window).global = window;
 (window).process = process;
@@ -62,16 +62,13 @@ const Meet = (props) => {
 
   useEffect(() => {
 
-
-
-
     const _ = sessionStorage.getItem('user') === null ? props.history.push("/", { roomId }) : setToStart()
 
     const statsIntervals = setInterval(() => {
       // peersRef.current.forEach(({ peer }) => {console.log(peer);})
       if (peersRef.current.length) {
 
-        peersRef.current.forEach(({ peerID, userName, peer }, index) => {
+        peersRef.current.forEach(({ peer }, index) => {
 
           let peerStats = {};
           peer?.getStats((err, stats) => {
@@ -80,12 +77,12 @@ const Meet = (props) => {
             stats.forEach((stats_report) => {
               if (stats_report.kind === "video" && stats_report.type === "remote-inbound-rtp") {
                 peerStats['rtt'] = stats_report.roundTripTime
-                const newOne = { [userName]: peerStats };
+                const newOne = { [peer.userName]: peerStats };
                 setStatsReport(pre_reports => ({ ...pre_reports, ...newOne }))
               }
               else if (stats_report.kind === "video" && stats_report.framesPerSecond) {
                 peerStats['fps'] = stats_report.framesPerSecond
-                const newOne = { [userName]: peerStats };
+                const newOne = { [peer.userName]: peerStats };
                 setStatsReport(pre_reports => ({ ...pre_reports, ...newOne }))
               }
             })
@@ -108,6 +105,17 @@ const Meet = (props) => {
     };
 
   }, []);
+
+
+  useEffect(() => {
+    console.log("new one :\n", peers);
+    return () => { }
+  }, [peers])
+
+  useEffect(() => {
+    console.log(videoDevices);
+  }, [videoDevices])
+
 
   // nc
   function setToStart() {
@@ -158,10 +166,9 @@ const Meet = (props) => {
     // Set Back Button Event
     window.addEventListener('popstate', goToBack);
 
-    // Connect Camera & Mic
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
+    // Ask user to Connect Camera & Mic at First Time
+    navigator.mediaDevices.getUserMedia({ video: { frameRate: { max: 15 } }, audio: { channels: 4, autoGainControl: false, latency: 0, sampleRate: 48000, sampleSize: 16, volume: 1.0 } }).then((stream) => {
       getSetDevices()
-      console.log("stream ==========>",stream);
       userVideoRef.current.srcObject = stream; // local
       userStream.current = stream;
 
@@ -169,8 +176,7 @@ const Meet = (props) => {
 
       // here new peers get added
       socket.on('FE-user-join', (users) => {
-        // all users
-        console.log("ALL users in user-join", users)
+        console.log("Fe user join");
         const temp_peers = [];
         users.forEach(({ userId, info }) => {
 
@@ -182,12 +188,8 @@ const Meet = (props) => {
             peer.userName = userName;
             peer.peerID = userId;
 
-            // peersRef.current.push({
-            //   peerID: userId,
-            //   peer,
-            //   userName,
-            // });
-            push_unique_peer({ peerID: userId, peer, userName })
+            // push_unique_peer({ peerID: userId, peer, userName })
+            push_unique_peer({ peer})
             temp_peers.push(peer);
 
             setUserVideoAudio((preList) => {
@@ -196,8 +198,6 @@ const Meet = (props) => {
                 [peer.userName]: { video, audio },
               };
             });
-            // console.log("peers pushed", temp_peers)
-
           }
         });
 
@@ -206,31 +206,41 @@ const Meet = (props) => {
 
       socket.on('FE-receive-call', ({ signal, from, info }) => {
 
+        console.log("FE-receive-call");
+
         let { userName, video, audio } = info;
         const peerIdx = findPeer(from);
 
-        if (!peerIdx) {
-          const peer = addPeer(signal, from, stream);
 
-          peer.userName = userName;
+        // if (!peerIdx) {
+        const peer = addPeer(signal, from, stream);
 
-          // peersRef.current.push({
-          //   peerID: from,
-          //   peer,
-          //   userName,
-          // });
-          push_unique_peer({ peerID: from, peer, userName })
+        peer.userName = userName;
+        peer.peerID = from;
 
-          setPeers((users) => {
-            return [...users, peer];
-          });
-          setUserVideoAudio((preList) => {
-            return {
-              ...preList,
-              [peer.userName]: { video, audio },
-            };
-          });
-        }
+        push_unique_peer({peer})
+
+        setPeers((prepeers) => {
+          if(prepeers.length > 0){
+            prepeers = prepeers.filter((prepeer) => {
+              if (prepeer.peerID === peer.peerID) {
+                return peer
+              }
+              return true
+            });
+            return [...prepeers];
+          }else{
+            return [...prepeers, peer];
+          }
+        });
+        
+        setUserVideoAudio((preList) => {
+          return {
+            ...preList,
+            [peer.userName]: { video, audio },
+          };
+        });
+        // }
       });
 
       socket.on('FE-call-accepted', ({ signal, answerId }) => {
@@ -245,7 +255,7 @@ const Meet = (props) => {
           users = users.filter((user) => user.peerID !== peerIdx?.peer.peerID);
           return [...users];
         });
-        peersRef.current = peersRef.current.filter(({ peerID }) => peerID !== userId);
+        peersRef.current = peersRef.current.filter(({ peer }) => peer.peerID !== userId);
       });
     });
 
@@ -269,21 +279,21 @@ const Meet = (props) => {
   }
 
   // nc
-  const push_unique_peer = ({ peerID, peer, userName }) => {
+  const push_unique_peer = ({ peer}) => {
     if (peersRef.current.length > 0) {
       peersRef.current.forEach((peerData, index) => {
-        console.log(peerData, index);
-        if (peerData.userName === userName) {
-          console.log("exist");
-          peersRef.current[index] = { peerID, userName, peer };
+
+        if (peerData.peer.userName === peer.userName) {
+          console.log("replacing peer");
+          peersRef.current[index] = {peer};
         } else {
-          console.log("new one");
-          peersRef.current.push({ peerID, userName, peer })
+          console.log("adding new peer");
+          peersRef.current.push({ peer })
         }
       }
       )
     } else {
-      peersRef.current.push({ peerID, userName, peer })
+      peersRef.current.push({peer })
     }
   }
 
@@ -329,14 +339,60 @@ const Meet = (props) => {
   //   });
   // }
 
+
+  const setMediaBitrate = (sdp, mediaType, bitrate) => {
+    const sdpLines = sdp.split('\n');
+    let mediaLineIndex = -1;
+    const mediaLine = 'm=${mediaType}';
+    let bitrateLineIndex = -1;
+    const bitrateLine = 'b=AS:${bitrate}';
+    mediaLineIndex = sdpLines.findIndex(line => line.startsWith(mediaLine));
+
+    // If we find a line matching “m={mediaType}”
+    if (mediaLineIndex > -1 && mediaLineIndex < sdpLines.length) {
+      // Skip the media line
+      bitrateLineIndex = mediaLineIndex + 1;
+
+      // Skip both i=* and c=* lines (bandwidths limiters have to come afterwards)
+      while (sdpLines[bitrateLineIndex].startsWith('i=') || sdpLines[bitrateLineIndex].startsWith('c=')) {
+        bitrateLineIndex += 1;
+      }
+
+      if (sdpLines[bitrateLineIndex].startsWith('b=')) {
+        // If the next line is a b=* line, replace it with our new bandwidth
+        sdpLines[bitrateLineIndex] = bitrateLine;
+      } else {
+        // Otherwise insert a new bitrate line.
+        sdpLines.splice(bitrateLineIndex, 0, bitrateLine);
+      }
+    }
+
+    // Then return the updated sdp content as a string
+    // sdpLines += "x-google-max-bitrate=500\r";
+    return sdpLines.join('\n');
+    // return sdpLines += '\n';
+  };
+
+
   function createPeer(userId, caller, stream) {
+
+    console.log("creating peer");
     const peer = new Peer({
       initiator: true,
-      objectMode: true,
+      objectMode: false,
       trickle: false,
+      // allowHalfTrickle: false,
+      reconnectTimmer: 2000,
+      sdpTransform: (sdp) => {
+        let sdp2 = setMediaBitrate(sdp, 'audio', 510000);
+        sdp2 += "a=fmtp:100 x-google-min-bitrate=1000\r\n";
+        return sdp2;
+      },
       stream,
       iceRestart: true,
       config: {
+        // iceTransportPolicy: 'relay',
+        // rtcpMuxPolicy: 'negotiate',
         iceServers:
           [
             { urls: 'stun:stun.l.google.com:19302' },
@@ -363,16 +419,74 @@ const Meet = (props) => {
               urls: 'turn:openrelay.metered.ca:443?transport=tcp',
               username: 'openrelayproject',
               credential: 'openrelayproject'
+            },
+            {
+              urls: "stun:numb.viagenie.ca",
+              username: "pasaseh@ether123.net",
+              credential: "12345678"
+            },
+            {
+              urls: "turn:numb.viagenie.ca",
+              username: "pasaseh@ether123.net",
+              credential: "12345678"
             }
           ]
-      }
+      },
       // wrtc: { RTCPeerConnection }
 
     });
+    // .then(() => signalingChannel.send(JSON.stringify({ sdp: peer.localDescription })))
+    // .catch(failed);
+
+    peer.on('connect', () => {
+      console.log("connect 1");
+
+      // console.log(stream);
+    })
+
+    peer.on('stream', (stream) => {
+      console.log("stream 1");
+
+      stream.addEventListener("mute", () => {
+        console.log("mute 1");
+      })
+
+      // console.log(stream);
+    })
+
+    peer.on('data', (data) => {
+      console.log("data 1");
+      // console.log(data);
+    })
+
+    peer.on('track', (track, stream) => {
+      console.log("track 1");
+      track.addEventListener('mute', () => {
+        console.log('track removed1')
+      });
+
+      track.addEventListener('unmute', () => {
+        console.log('track added 1')
+      });
+
+      // console.log(track);
+    })
+    peer.on('track', (track) => {
+      console.log("track 12");
+      track.addEventListener('mute', () => {
+        console.log('track removed 12')
+      });
+
+      track.addEventListener('unmute', () => {
+        console.log('track added 12')
+      });
+
+      // console.log(track);
+    })
 
     peer.on('signal', (signal) => {
+      console.log("signal 1");
 
-      console.log("signallllllllllllllllllllll 1");
       socket.emit('BE-call-user', {
         userToCall: userId,
         from: caller,
@@ -381,30 +495,39 @@ const Meet = (props) => {
     });
 
     peer.on('disconnect', () => {
-      console.log("disconnectttttttttttttttt");
+      console.log("disconnect");
       removePeer(peer)
     });
 
     peer.on('error', (error) => {
-      console.log("errorrrrrrrrrrrrrrrrrrrrrr ", error);
+      console.log("error ", error);
       removePeer(peer)
     })
 
     peer.on('close', () => {
-      console.log("closeeeeeeeeeeeeeeeeeeeeeeeeeeee ");
+      console.log("close");
       removePeer(peer);
-
     })
 
     return peer;
   }
 
   function addPeer(incomingSignal, callerId, stream) {
+    console.log("adding peer");
     const peer = new Peer({
       initiator: false,
       trickle: false,
+      objectMode: false,
+      sdpTransform: (sdp) => {
+        let sdp2 = setMediaBitrate(sdp, 'audio', 510000);
+        sdp2 += "a=fmtp:100 x-google-min-bitrate=3000\r\n";
+        return sdp2;
+      },
       stream,
+      // wrtc: { RTCPeerConnection },
       config: {
+        // iceTransportPolicy: 'relay',
+        // rtcpMuxPolicy: 'negotiate',
         iceServers:
           [
             { urls: 'stun:stun.l.google.com:19302' },
@@ -431,16 +554,78 @@ const Meet = (props) => {
               urls: 'turn:openrelay.metered.ca:443?transport=tcp',
               username: 'openrelayproject',
               credential: 'openrelayproject'
+            },
+            {
+              urls: "stun:numb.viagenie.ca",
+              username: "pasaseh@ether123.net",
+              credential: "12345678"
+            },
+            {
+              urls: "turn:numb.viagenie.ca",
+              username: "pasaseh@ether123.net",
+              credential: "12345678"
             }
           ],
       }
     });
 
+    // .then(() => signalingChannel.send(JSON.stringify({ sdp: peer.localDescription })))
+    // .catch(failed);
+
+    peer.on('connect', () => {
+      console.log("connect 2");
+    })
+
     peer.on('signal', (signal) => {
-      console.log("signallllllllllllllllllllll 2");
+      console.log("signal 2");
 
       socket.emit('BE-accept-call', { signal, to: callerId });
     });
+
+    peer.on('stream', (stream) => {
+      console.log("stream 2");
+
+      stream.addEventListener("mute", () => {
+        console.log("rrrrrrrrrrrrrrrrrrrrr");
+      })
+
+      stream.addEventListener("unmute", () => {
+        console.log("rrrrrrrrrrrrrrrrrrrrr");
+      })
+    })
+
+    peer.on('data', (data) => {
+      console.log("data 2");
+    })
+
+    peer.on('track', (track, stream) => {
+      console.log("track 2");
+      // track.addEventListener('mute', () => {
+      //   console.log('track removed 21')
+      // });
+
+      // track.addEventListener('unmute', () => {
+      //   console.log('track added 21')
+      // });
+
+      // console.log(track);
+    })
+
+    peer.on('track', (track) => {
+      console.log("track 21");
+
+      track.addEventListener('mute', () => {
+        console.log("removed track : ", track);
+
+        // peer.signal("hiiii")
+      });
+
+      track.addEventListener('unmute', () => {
+        console.log('track added 22')
+      });
+
+      // console.log(track);
+    })
 
     peer.on('disconnect', () => {
       console.log("Ok peer dissconnected ")
@@ -448,13 +633,13 @@ const Meet = (props) => {
     });
 
     peer.on('error', (error) => {
-      console.log("errorrrrrrrrrrrrrrrrrrrrrr 2");
+      console.log("errorrrrrrrrrrrrrrrrrrrrrr 2", error);
 
       removePeer(peer)
     })
 
     peer.on('close', () => {
-      console.log("closeeeeeeeeeeeeeeeeeeeeeeeeeeee 2");
+      console.log("close 2");
       removePeer(peer)
     })
 
@@ -469,7 +654,9 @@ const Meet = (props) => {
     return peer;
   }
 
-  function removePeer(peer) {
+  function removePeer(rpeer) {
+
+    console.log('removing peer');
     // const isVideoOn = userVideoRef.current.srcObject.getVideoTracks()[0].enabled;
     // const isAudioOn = userVideoRef.current.srcObject.getAudioTracks()[0].enabled;
     // navigator.mediaDevices.getUserMedia({ video: isVideoOn, audio: isAudioOn })
@@ -481,55 +668,77 @@ const Meet = (props) => {
     // peer.removeStream(stream);
     // peer.destroy()
     // window.location.href = '/';
-    peer.destroy()
+    rpeer.destroy()
     setPeers((users) => {
-      users = users.filter((user) => user.peerID !== peer.peerID);
+      users = users.filter((user) => user.peerID !== rpeer.peerID);
       return [...users];
     });
-    peersRef.current = peersRef.current.filter(({ peerID }) => peerID !== peer.peerID);
+    peersRef.current = peersRef.current.filter(({ peer }) => peer.peerID !== rpeer.peerID);
     // })
   }
 
   function findPeer(id) {
-    return peersRef.current.find((p) => p.peerID === id);
+    return peersRef.current.find(({peer}) => peer.peerID === id);
   }
 
 
-  // const stopVideoStream = () => {
+  const switchVideoStream = (switch_action) => {
 
-  //   navigator.mediaDevices.getUserMedia({ video: { 'deviceId': videoDeviceId},audio:{'deviceId': audioDeviceId} })
-  //     .then((stream) => {
-  //       const newStreamTrack = stream.getTracks().find((track) => track.kind === 'audio');
+    // console.log("userStream.current : ", userStream.current);
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
 
-  //       const oldStreamTrack = userStream.current.getTracks().find((track) => track.kind === 'video');
+      const bothTracks = stream.getTracks();
 
-  //       userStream.current.removeTrack(oldStreamTrack);
-  //       // userStream.current.addTrack(newStreamTrack);
+      // const newStreamTrack = stream.getTracks().find((track) => track.kind === 'audio');
+      // const oldStreamTrack = userStream.current.getTracks().find((track) => track.kind === 'video');
 
-  //       peersRef.current.forEach(({ peer }) => {
-  //         // replaceTrack (oldTrack, newTrack, oldStream);
-  //         peer.replaceTrack(
-  //           oldStreamTrack,
-  //           newStreamTrack,
-  //           userStream.current
-  //         );
+      const newVideoTrack = stream.getVideoTracks()[0];
+      // const newAudioTrack = stream.getAudioTracks()[0];
+      const oldVideoTrack = userStream.current.getVideoTracks()[0];
+      const oldAudioTrack = userStream.current.getAudioTracks()[0];
 
-  //       });
-  //     }).catch((error) => {
-  //       console.log(error)
-  //     });
+      if (!switch_action) {
+        userStream.current.removeTrack(oldVideoTrack, userStream.current)
+      } else {
 
-  // }
+        userStream.current.addTrack(newVideoTrack, userStream.current);
+      }
 
-  const stopAudioStream = () => {
+      peersRef.current.forEach(({ peer }) => {
+        // console.log(peer.-wr);
+
+        if (!switch_action) {
+          console.log(peer.removeTrack(oldVideoTrack, userStream.current));
+
+        } else {
+          // console.log(peer);
+          // const vt = new MediaStream(newVideoTrack)
+          peer.addTrack(newVideoTrack, userStream.current);
+        }
+        // peer.addTrack(newStreamTrack, userStream.current)
+        // peer.replaceTrack(
+        //   oldStreamTrack,
+        //   newStreamTrack,
+        //   userStream.current
+        // );
+
+      });
+    }).catch((error) => {
+      console.log(error)
+    });
 
   }
+
+  const stopAudioStream = () => { }
 
   // Open Chat
   const clickChat = (e) => {
     e.stopPropagation();
     setDisplayChat(!displayChat);
   };
+
+
+
 
   // BackButton
   const goToBack = (e) => {
@@ -548,11 +757,11 @@ const Meet = (props) => {
 
       if (target === 'video') {
         const userVideoTrack = userVideoRef?.current?.srcObject?.getVideoTracks()[0];
+
         videoSwitch = !videoSwitch;
-        userVideoTrack.enabled = videoSwitch;
-        console.log("userStream : ",userStream);
-        console.log("userVideoRef : ",userVideoRef.current);
-        // const _ = videoSwitch?null:stopVideoStream();
+        // if (userVideoTrack) { userVideoTrack.enabled = videoSwitch }
+        console.log("is camera ON : ", videoSwitch);
+        switchVideoStream(videoSwitch)
       } else {
         const userAudioTrack = userVideoRef.current.srcObject.getAudioTracks()[0];
         audioSwitch = !audioSwitch;
@@ -570,7 +779,9 @@ const Meet = (props) => {
       };
     });
 
-    socket.emit('BE-toggle-camera-audio', { roomId, switchTarget: target });
+    // socket.emit('BE-toggle-camera-audio', { roomId, switchTarget: target });
+    socket.emit('BE-toggle-camera-audio', { roomId, switchTarget: "audio" });
+
 
   };
 
@@ -583,41 +794,27 @@ const Meet = (props) => {
 
   const clickScreenSharing = () => {
     if (!screenShare) {
-      navigator.mediaDevices
-        .getDisplayMedia({ cursor: true })
-        .then((stream) => {
-          const screenTrack = stream.getTracks()[0];
+      navigator.mediaDevices.getDisplayMedia({ cursor: true }).then((stream) => {
+        const screenTrack = stream.getTracks()[0];
 
-          peersRef.current.forEach(({ peer }) => {
-            // replaceTrack (oldTrack, newTrack, oldStream);
-            peer.replaceTrack(
-              peer.streams[0]
-                .getTracks()
-                .find((track) => track.kind === 'video'),
-              screenTrack,
-              userStream.current
-            );
-          });
-
-          // Listen click end
-          screenTrack.onended = () => {
-            peersRef.current.forEach(({ peer }) => {
-              peer.replaceTrack(
-                screenTrack,
-                peer.streams[0]
-                  .getTracks()
-                  .find((track) => track.kind === 'video'),
-                userStream.current
-              );
-            });
-            userVideoRef.current.srcObject = userStream.current;
-            setScreenShare(false);
-          };
-
-          userVideoRef.current.srcObject = stream;
-          screenTrackRef.current = screenTrack;
-          setScreenShare(true);
+        peersRef.current.forEach(({ peer }) => {
+          // replaceTrack (oldTrack, newTrack, oldStream);
+          peer.replaceTrack(peer.streams[0].getTracks().find((track) => track.kind === 'video'), screenTrack, userStream.current);
         });
+
+        // Listen click end
+        screenTrack.onended = () => {
+          peersRef.current.forEach(({ peer }) => {
+            peer.replaceTrack(screenTrack, peer.streams[0].getTracks().find((track) => track.kind === 'video'), userStream.current);
+          });
+          userVideoRef.current.srcObject = userStream.current;
+          setScreenShare(false);
+        };
+
+        userVideoRef.current.srcObject = stream;
+        screenTrackRef.current = screenTrack;
+        setScreenShare(true);
+      });
     } else {
       screenTrackRef.current.onended();
     }
@@ -686,7 +883,7 @@ const Meet = (props) => {
     navigator.mediaDevices.getUserMedia({ audio: { 'deviceId': audioDeviceId, enabledAudio: true } })
       .then((stream) => {
         const newStreamTrack = stream.getTracks().find((track) => track.kind === 'audio');
-
+        console.log(newStreamTrack);
         const oldStreamTrack = userStream.current.getTracks().find((track) => track.kind === 'audio');
 
         userStream.current.removeTrack(oldStreamTrack);
@@ -766,6 +963,7 @@ const Meet = (props) => {
                   // playInline
                   ></video>
                 </Badge.Ribbon>
+                <AudioVisu />
               </Col>
 
               {/* <Row justify="space-around"> */}
@@ -773,7 +971,7 @@ const Meet = (props) => {
                 Object.keys(peers).length > 0 &&
                 peers.map((peer, index, arr) =>
                   // <Col key={peer.userName} span={peers?.length===3?12:(index+1)%2===0?24:12} >
-                  <Col key={peer.userName} span={index === 1 ? 24 : 12}>
+                  <Col key={peer.peerID} span={index === 1 ? 24 : 12}>
                     <Badge count={Object.keys(statsReport).length ? `RTT ${statsReport[peer.userName]?.rtt * 1000} ms` : 'RTT:N/A'} style={{ color: "green", backgroundColor: "white", marginRight: 50, marginTop: 20 }} size="small" >
                       <Badge count={Object.keys(statsReport).length ? `FPS ${statsReport[peer.userName]?.fps}` : 'FPS N/A'} style={{ color: "green", backgroundColor: "white", marginRight: 50, marginTop: 40 }} size="small" >
                         <Badge.Ribbon text={peer?.userName} placement="start" color="blue" id="userBadge">
@@ -781,6 +979,7 @@ const Meet = (props) => {
                         </Badge.Ribbon>
                       </Badge>
                     </Badge>
+
                   </Col>
                 )
               }

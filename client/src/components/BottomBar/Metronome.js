@@ -3,8 +3,11 @@ import { useEffect, useState } from "react";
 // import _strongTick from "./strongTick.wav";
 // import _weakTick from "./weakTick.wav";
 
-let _weakTick = "//daveceddia.com/freebies/react-metronome/click1.wav";
-let _strongTick = "//daveceddia.com/freebies/react-metronome/click2.wav";
+// let _weakTick = "//daveceddia.com/freebies/react-metronome/click1.wav";
+// let _strongTick = "//daveceddia.com/freebies/react-metronome/click2.wav";
+
+let _weakTick = "//assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.mp3";
+let _strongTick = "//assets.mixkit.co/sfx/preview/mixkit-single-classic-click-1116.mp3";
 
 const FIRST_BEAT = 1;
 const DEFAULT_BPM = 60;

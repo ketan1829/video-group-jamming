@@ -1,20 +1,20 @@
 body {
-    background-color: rgba(31,37, 58, 1);
+    background-color: rgba(31, 37, 58, 1);
     padding: 0;
 
-    
+
 }
 
 .screen {
     /* align-items: flex-start; */
-    background-color: rgba(31,37, 58, 1);
-    display: flex; 
-    height: 100%;  
+    background-color: rgba(31, 37, 58, 1);
+    display: flex;
+    height: 100%;
 }
 
 .header {
     /* align-items: flex-start; */
-    background-color: rgba(31,37, 58, 1);
+    background-color: rgba(31, 37, 58, 1);
     display: flex;
 }
 
@@ -32,12 +32,18 @@ body {
     border-radius: 6px;
     width: auto;
     height: 100%;
-    overflow:hidden;
+    overflow: hidden;
     /* resize: both; */
     /* z-index: 1; */
 }
 
 .myvideo {
+
+    transform: rotateY(180deg);
+    -webkit-transform: rotateY(180deg);
+    /* Safari and Chrome */
+    -moz-transform: rotateY(180deg);
+    /* Firefox */
 
     /* position: absolute;
     left: 0;
@@ -46,7 +52,7 @@ body {
     width: 100%;
     height: 100%; */
     /* min-width:100%; */
-    object-fit:auto;
+    object-fit: auto;
     /* object-position: 50% 50%; */
     /* z-index: -100; */
     /* height:100px; */
@@ -54,26 +60,33 @@ body {
     /* height: calc(100vh - 170px); */
     /* height: auto; */
     border-radius: 4px;
-    border: 5px solid  #ffbf0d ;
+    border: 5px solid #ffbf0d;
     /* display:flex; */
 }
 
 .PeerContainer {
-    object-fit:auto;
+
+    transform: rotateY(180deg);
+    -webkit-transform: rotateY(180deg);
+    /* Safari and Chrome */
+    -moz-transform: rotateY(180deg);
+    /* Firefox */
+
+    object-fit: auto;
     object-position: 50% 50%;
     min-width: 100%;
-    border: 5px solid #bfc0ff ;
+    border: 5px solid #bfc0ff;
     border-radius: 4px;
     /* height: calc(100vh - 10px); */
-    display:flex;
+    display: flex;
 
     /* align-self: center; */
 
 }
 
-.peerdiv{
+.peerdiv {
 
-    border: 1px solid #1ec27e ;
+    border: 1px solid #1ec27e;
     width: 100%;
 
 }
@@ -94,24 +107,24 @@ body {
 
 
 /* mobile-phones */
-@media (min-width: 250px) { 
+@media (min-width: 250px) {
 
-    .main_container{
+    .main_container {
         padding: 30px 20px;
         height: auto;
-        background-color: rgba(31,37, 58, 1);
+        background-color: rgba(31, 37, 58, 1);
     }
 
     .myvideo {
-        height:50%;
+        height: 50%;
     }
 
- }
+}
 
 /* desktops ad laptops */
 @media (min-width:992px) {
-    .main_container{
+    .main_container {
         padding: 30px 80px;
-        background-color: rgba(31,37, 58, 1);
-    } 
+        background-color: rgba(31, 37, 58, 1);
+    }
 }

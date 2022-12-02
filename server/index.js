@@ -113,7 +113,7 @@ io.on('connection', (socket) => {
     // Socket Join RoomName
     socket.join(roomId);
     socketList[socket.id] = { userName, video: true, audio: true,roomId };
-    console.log("socketList:",socketList)
+    
     // Set User List
     io.sockets.in(roomId).clients((err, clients) => {
       try {
@@ -163,6 +163,7 @@ io.on('connection', (socket) => {
 
   socket.on('BE-toggle-camera-audio', ({ roomId, switchTarget }) => {
     if (switchTarget === 'video') {
+      console.log("vvvvvvvvvvvvvvvvvvvv",!socketList[socket.id].video);
       socketList[socket.id].video = !socketList[socket.id].video;
     } else {
       socketList[socket.id].audio = !socketList[socket.id].audio;

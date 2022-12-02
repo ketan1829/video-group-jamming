@@ -2,8 +2,8 @@
 module.exports = {
   mode: 'jit',
   content: [
-    "./src/**/*.{js,jsx,ts,tsx, html}",
-    "./src/components/**/*.{js,ts,jsx,tsx, html}",
+    "./src/**/*.{js,jsx,ts,tsx, html, scss}",
+    "./src/components/**/*.{js,ts,jsx,tsx, html, scss}",
     "./src/layouts/**/*.{js,ts,jsx,tsx}"
   ],
   theme: {
