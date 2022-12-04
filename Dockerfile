@@ -6,7 +6,7 @@ FROM node:alpine
 RUN mkdir -p /app
 WORKDIR /app
 COPY ./server/package.json /app
-RUN npm install && npm cache clean --force",
+RUN npm install && npm cache clean --forcexs
 COPY ./ /app
 RUN npm run ket-postbuild
 EXPOSE 80
