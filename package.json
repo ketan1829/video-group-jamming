@@ -3,7 +3,7 @@
     "prepare-client":"cd client && npm install --legacy-peer-deps && npm run build",
     "prepare-server":"cd server && npm install",
     "ket-postbuild": "npm run prepare-client && npm run prepare-server",
-    "start": "cd server && npm start"
+    "start": "cd server && npm start run"
   },
   "homepage": "https://choira.io/"
 }
