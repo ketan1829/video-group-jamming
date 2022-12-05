@@ -26,7 +26,7 @@ COPY ./default.conf /etc/nginx/conf.d/default.conf
 FROM node:alpine
 
 WORKDIR /app
-COPY --from=client /app/client/build/ ./client/build/
+COPY --from=client /app/build/ /app
 
 WORKDIR /app/server/
 COPY server/package*.json ./
