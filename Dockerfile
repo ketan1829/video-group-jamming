@@ -1,25 +1,35 @@
 
-# Setup and build the client
+# build - compile the client
+# tiangolo/node-frontend:10 - img has pre-installed nginx default configs + deployment related configs
+FROM tiangolo/node-frontend:10 as client
 
-FROM node as client
-
-WORKDIR /usr/app/client/
-COPY client/package*.json ./
+WORKDIR /app
+COPY package*.json /app/
 RUN npm install --legacy-peer-deps
-COPY client/ ./
-# RUN npm start run
+COPY ./ /app/
 
-FROM nginx
+
+RUN npm run build
+
+# compiled app, ready for production with Nginx
+
+FROM nginx:1.15
+
+# COPY --from=client /app/build/ /usr/share/nginx/html
 COPY ./default.conf /etc/nginx/conf.d/default.conf
+# Copy the default nginx.conf
+COPY --from=client /nginx.conf /etc/nginx/conf.d/default.conf
+
+
 
 # Setup the server
 
 FROM node
 
-WORKDIR /usr/app/
-COPY --from=client /usr/app/client/build/ ./client/build/
+WORKDIR /app/
+COPY --from=client /app/client/build/ ./client/build/
 
-WORKDIR /usr/app/server/
+WORKDIR /app/server/
 COPY server/package*.json ./
 RUN npm install
 COPY server/ ./
@@ -31,4 +41,4 @@ EXPOSE 3001
 
 RUN npm start run
 
-CMD ["node", "index.js"]
+CMD ["npm", "run", "start"]
