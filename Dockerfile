@@ -1,7 +1,7 @@
 
 # build - compile the client
 # tiangolo/node-frontend:10 - img has pre-installed nginx default configs + deployment related configs
-FROM tiangolo/node-frontend:10 as client
+FROM node:alpine as client
 
 WORKDIR /app
 COPY client/package*.json /app/
@@ -23,7 +23,7 @@ COPY --from=client /nginx.conf /etc/nginx/conf.d/default.conf
 
 # Setup the server
 
-FROM node
+FROM node:alpine
 
 WORKDIR /app
 COPY --from=client /app/client/build/ ./client/build/
