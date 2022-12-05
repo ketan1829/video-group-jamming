@@ -26,4 +26,4 @@ ENV PORT 3001
 
 EXPOSE 3001
 
-CMD ["nodemon", "index.js"]
+CMD ["node", "index.js"]
