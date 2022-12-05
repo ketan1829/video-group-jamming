@@ -17,7 +17,7 @@ FROM nginx:1.15
 # COPY --from=client /app/build/ /usr/share/nginx/html
 COPY ./default.conf /etc/nginx/conf.d/default.conf
 # Copy the default nginx.conf
-COPY --from=client /nginx.conf /etc/nginx/conf.d/default.conf
+# COPY --from=client /nginx.conf /etc/nginx/conf.d/default.conf
 
 
 
