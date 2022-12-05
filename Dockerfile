@@ -1,12 +1,12 @@
 
 
 
-FROM node:alphine AS ui-build
+FROM node AS ui-build
 WORKDIR /usr/src/app
 COPY client/ ./client/
 RUN cd client && npm install --legacy-peer-deps && npm run build
 
-FROM node:10 AS server-build
+FROM node AS server-build
 WORKDIR /root/
 COPY --from=ui-build /usr/src/app/client/build ./client/build
 COPY server/package*.json ./server/
@@ -15,6 +15,7 @@ COPY server/server.js ./server/
 
 FROM nginx
 COPY ./default.conf /etc/nginx/conf.d/default.conf
+
 
 EXPOSE 3080
 
