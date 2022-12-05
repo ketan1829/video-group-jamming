@@ -41,7 +41,9 @@ COPY package.json ./
 # COPY package-lock.json ./
 COPY ./ ./
 RUN npm i
-CMD ["node", "server.js"]
+# CMD ["node", "server.js"]
+CMD ["npm", "run", "start"]
+
 
 
 
