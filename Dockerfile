@@ -7,7 +7,7 @@ WORKDIR /usr/app/client/
 COPY client/package*.json ./
 RUN npm install --legacy-peer-deps
 COPY client/ ./
-RUN npm start run
+# RUN npm start run
 
 FROM nginx
 COPY ./default.conf /etc/nginx/conf.d/default.conf
@@ -27,5 +27,8 @@ COPY server/ ./
 ENV PORT 3001
 
 EXPOSE 3001
+
+
+RUN npm start run
 
 CMD ["node", "index.js"]
