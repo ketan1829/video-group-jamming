@@ -1,59 +1,29 @@
 
+# Setup and build the client
 
-# Production
+FROM node:9.4.0-alpine as client
 
-# FROM node AS ui-build
-# WORKDIR /usr/src/app
-# COPY client/ ./client/
-# RUN cd client && npm install --legacy-peer-deps && npm run build
-
-# FROM node AS server-build
-# WORKDIR /root/
-# COPY --from=ui-build /usr/src/app/client/build ./client/build
-# COPY server/package*.json ./server/
-# RUN cd server && npm install
-# COPY server/server.js ./server/
-
-# FROM nginx
-# COPY ./default.conf /etc/nginx/conf.d/default.conf
-
-
-# EXPOSE 3080
-
-# CMD ["node", "./server/server.js"]
-
-# Development
-
-FROM node:alpine
-WORKDIR /app
-COPY package.json ./
-# COPY package-lock.json ./
-COPY ./ ./
+WORKDIR /usr/app/client/
+COPY client/package*.json ./
 RUN npm install --legacy-peer-deps
-CMD ["npm", "run", "start"]
-
-FROM nginx
-COPY ./default.conf /etc/nginx/conf.d/default.conf
-
-FROM node:alpine
-WORKDIR /app
-COPY package.json ./
-# COPY package-lock.json ./
-COPY ./ ./
-RUN npm i
-# CMD ["node", "server.js"]
-CMD ["npm", "run", "start"]
+COPY client/ ./
+RUN npm run build
 
 
+# Setup the server
 
+FROM node:9.4.0-alpine
 
+WORKDIR /usr/app/
+COPY --from=client /usr/app/client/build/ ./client/build/
 
-#development mode - OLD
+WORKDIR /usr/app/server/
+COPY server/package*.json ./
+RUN npm install -qy
+COPY server/ ./
 
-# FROM node:alpine
-# WORKDIR /app
-# COPY package.json ./
-# COPY package-lock.json ./
-# COPY ./ ./
-# RUN npm i
-# CMD ["npm", "run", "start"]
+ENV PORT 8000
+
+EXPOSE 8000
+
+CMD ["npm", "start"]
