@@ -9,6 +9,8 @@ RUN npm install --legacy-peer-deps
 COPY client/ ./
 RUN npm run build
 
+FROM nginx
+COPY ./default.conf /etc/nginx/conf.d/default.conf
 
 # Setup the server
 
