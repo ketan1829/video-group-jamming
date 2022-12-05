@@ -20,10 +20,10 @@ COPY --from=client /usr/app/client/build/ ./client/build/
 WORKDIR /usr/app/server/
 COPY server/package*.json ./
 RUN npm install
-COPY . .
+COPY server/ ./
 
 ENV PORT 3001
 
 EXPOSE 3001
 
-CMD ["npm", "start"]
+CMD ["nodemon", "index.js"]
