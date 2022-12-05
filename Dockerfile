@@ -27,7 +27,7 @@
 FROM node:alpine
 WORKDIR /app
 COPY package.json ./
-COPY package-lock.json ./
+# COPY package-lock.json ./
 COPY ./ ./
 RUN npm install --legacy-peer-deps
 CMD ["npm", "run", "start"]
@@ -38,7 +38,7 @@ COPY ./default.conf /etc/nginx/conf.d/default.conf
 FROM node:alpine
 WORKDIR /app
 COPY package.json ./
-COPY package-lock.json ./
+# COPY package-lock.json ./
 COPY ./ ./
 RUN npm i
 CMD ["node", "server.js"]
