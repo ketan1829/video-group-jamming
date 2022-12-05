@@ -22,8 +22,8 @@ COPY server/package*.json ./
 RUN npm install
 COPY server/ ./
 
-ENV PORT 8000
+ENV PORT 3001
 
-EXPOSE 8000
+EXPOSE 3001
 
 CMD ["npm", "start"]
