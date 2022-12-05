@@ -4,10 +4,9 @@
 FROM tiangolo/node-frontend:10 as client
 
 WORKDIR /app
-COPY package*.json /app/
+COPY client/package*.json /app/
 RUN npm install --legacy-peer-deps
-COPY ./ /app/
-
+COPY /client /app/
 
 RUN npm run build
 
@@ -26,7 +25,7 @@ COPY --from=client /nginx.conf /etc/nginx/conf.d/default.conf
 
 FROM node
 
-WORKDIR /app/
+WORKDIR /app
 COPY --from=client /app/client/build/ ./client/build/
 
 WORKDIR /app/server/
