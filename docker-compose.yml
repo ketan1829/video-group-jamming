@@ -1,26 +1,44 @@
-version: '2'
+version: "3.3"
 services:
-  server:
+  nginx:
+    depends_on:
+      - client
+      - server
+    restart: always # because it is routing traffic to our entire app
     build:
-      context: ./server/
-    command: /usr/app/node_modules/.bin/nodemon src/index.js
-    volumes:
-      - ./server/:/usr/app
-      - /usr/app/node_modules
+      dockerfile: Dockerfile
+      context: ./nginx
     ports:
-      - "8080:8080"
-    # env_file: ./server/.env # TODO - uncomment this to auto-load your .env file!
-    environment:
-      - NODE_ENV=development
-      - CHOKIDAR_USEPOLLING=true
+      - '80:80'
   client:
     build:
-      context: ./client/
-    command: npm start
+      context: ./client
+      dockerfile: Dockerfile
+    #ports:
+    #  - '3000:3000'
     volumes:
-      - ./client/:/usr/app
-      - /usr/app/node_modules
-    depends_on:
-      - server
-    ports:
-      - "3000:3000"
+      - /app/node_modules # Inside the container, don't try to override this folder, just leave as is
+    restart: on-failure
+    container_name: client
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    #ports:
+    #  - '3001:3001'
+    restart: on-failure
+    container_name: server
+    volumes:
+      - /app/node_modules # Inside the container, don't try to override this folder, just leave as is
+    # env_file:
+    #   - ./env/backend.env
+  # mongo:
+  #   image: 'mongo'
+  #   container_name: 'mongo-db'
+  #   ports:
+  #     - '27017-27019:27017-27019'
+  #   volumes: 
+  #     - ./db/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+  #     - ./db/mongo-volume:/data/db
+  #   env_file:
+  #     - ./env/mongo.env

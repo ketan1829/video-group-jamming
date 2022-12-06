@@ -13,11 +13,11 @@ RUN npm run build
 # compiled app, ready for production with Nginx
 
 FROM nginx:1.15
-
+EXPOSE 3000
 # COPY --from=client /app/build/ /usr/share/nginx/html
 COPY ./default.conf /etc/nginx/conf.d/default.conf
 # Copy the default nginx.conf
-# COPY --from=client /nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=client /app/build /usr/share/nginx/html
 
 
 
@@ -26,15 +26,15 @@ COPY ./default.conf /etc/nginx/conf.d/default.conf
 FROM node:alpine
 
 WORKDIR /app
-COPY --from=client /app/build/ /app
+# COPY --from=client /app/build/ /app
 
-WORKDIR /app/server/
-COPY server/package*.json ./
+WORKDIR /app
+COPY /package*.json ./
 RUN npm install
-COPY server/ ./
+COPY . .
 
-ENV PORT 3001
+# ENV PORT 3001
 
-EXPOSE 3001
+# EXPOSE 3001
 
 CMD ["npm", "run", "start"]
