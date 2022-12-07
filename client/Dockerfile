@@ -26,4 +26,4 @@ COPY --from=builder /app/build /usr/share/nginx/html
 # Copying our nginx.conf
 COPY /nginx/default.conf /etc/nginx/conf.d/default.conf
 
-CMD [ "npm", "start", "run" ]
+ENTRYPOINT [ "nginx", "-g", "daemon off;" ]
