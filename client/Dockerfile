@@ -24,4 +24,4 @@ FROM nginx
 COPY --from=builder /app/build /usr/share/nginx/html
 
 # Copying our nginx.conf
-COPY /nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY /nginx/default.conf /etc/nginx/conf.d/default.conf
