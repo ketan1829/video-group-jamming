@@ -28,7 +28,7 @@ COPY ./package.json /app/
 RUN npm install --production && npm cache clean --force
 COPY ./ /app
 ENV NODE_ENV production
-ENV PORT 80
-EXPOSE 80
+ENV PORT 3001
+EXPOSE 3001
 
 CMD [ "npm", "start" ]
