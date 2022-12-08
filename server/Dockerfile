@@ -21,12 +21,12 @@ FROM node:alpine
 
 RUN apk update && apk upgrade && \
     apk add --no-cache git
-RUN mkdir -p /app
+# RUN mkdir -p /app
 WORKDIR /app
 
-COPY ./package.json /app/
+COPY package*.json ./
 RUN npm install --production && npm cache clean --force
-COPY ./ /app
+COPY . .
 ENV NODE_ENV production
 ENV PORT 3001
 EXPOSE 3001
