@@ -25,7 +25,7 @@ FROM node:alpine
 WORKDIR /server/
 
 COPY package*.json ./server/
-RUN npm install --production && npm cache clean --force
+RUN cd ./server && npm install --production && npm cache clean --force
 COPY . ./server/
 ENV NODE_ENV production
 ENV PORT 3001
