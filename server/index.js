@@ -54,6 +54,12 @@ let socketList = {};
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.get('/', function (req, res) {
+  console.log("/test request called");
+  res.send('Welcome to Server');
+});
+
+
 // if (process.env.NODE_ENV === 'production') {
 //   app.use(express.static(path.join(__dirname, '../client/build')));
 
