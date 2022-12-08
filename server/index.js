@@ -4,6 +4,10 @@ const app = express();
 const fs = require('fs');
 const path = require('path');
 
+const cors = require('cors');
+
+app.use(cors);
+
 // var options = {
 //   key: fs.readFileSync('/home/nitin_goswami/Choira/JammingApp/video-group-jamming/client/ssls/privkey.pem'),
 //   cert: fs.readFileSync('/home/nitin_goswami/Choira/JammingApp/video-group-jamming/client/ssls/fullchain.pem')
@@ -13,16 +17,18 @@ const path = require('path');
 var privateKey = fs.readFileSync('ssls/privkey.pem', 'utf8').toString();
 var certificate = fs.readFileSync('ssls/cert.pem', 'utf8').toString();
 var chain = fs.readFileSync('ssls/chain.pem').toString();
-var options = {
-  cors: {
-    origin: '*'
-},
-key: fs.readFileSync('./ssls/privkey.pem'),
-cert: fs.readFileSync('./ssls/cert.pem'),
-ca: fs.readFileSync('./ssls/chain.pem')
-};
 
-const http = require('https').createServer(options,app);
+// var options = {
+//   cors: {
+//     origin: '*'
+// },
+// key: fs.readFileSync('./ssls/privkey.pem'),
+// cert: fs.readFileSync('./ssls/cert.pem'),
+// ca: fs.readFileSync('./ssls/chain.pem')
+// };
+
+// const http = require('https').createServer(options,app);
+const http = require('https').createServer(app);
 // const http = require('http').createServer(app);
 // const http = require('http').createServer(options,app);
 
