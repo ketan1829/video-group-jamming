@@ -19,8 +19,8 @@ FROM node:alpine
 # CMD [ "node", "index.js" ]
 
 
-RUN apk update && apk upgrade && \
-    apk add --no-cache git
+# RUN apk update && apk upgrade && \
+#     apk add --no-cache git
 # RUN mkdir -p /app
 WORKDIR /app
 
@@ -31,4 +31,4 @@ ENV NODE_ENV production
 ENV PORT 3001
 EXPOSE 3001
 
-CMD [ "npm", "start" ]
+CMD [ "node", "index.js" ]
