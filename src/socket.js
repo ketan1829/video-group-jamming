@@ -2,7 +2,7 @@
 import io from 'socket.io-client';
 // const sockets = io('http://localhost:3001', { autoConnect: true, forceNew: true });
 
-const sockets = io('https://ket-jam-server.deploy.choira.io/');
+const sockets = io('https://ket-jam-server.deploy.choira.io');
 
 // const sockets = io('/');
 export default sockets;
