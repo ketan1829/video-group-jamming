@@ -23,6 +23,12 @@ ca: fs.readFileSync('./ssls/chain.pem')
 };
 
 const http = require('https').createServer(options,app);
+
+http.createServer(function (req, res) {
+  res.writeHead(200, {'Content-Type': 'text/plain'});
+  res.end('Server LIVE\n');
+})
+
 // const http = require('http').createServer(app);
 // const http = require('http').createServer(options,app);
 
