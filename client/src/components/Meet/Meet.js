@@ -244,6 +244,7 @@ const Meet = (props) => {
       });
 
       socket.on('FE-call-accepted', ({ signal, answerId }) => {
+        console.log("FE-call-accepted");
         const peerIdx = findPeer(answerId);
         peerIdx.peer.signal(signal);
       });
@@ -263,15 +264,15 @@ const Meet = (props) => {
       const peerIdx = findPeer(userId);
 
       setUserVideoAudio((preList) => {
-        let video = preList[peerIdx.userName].video;
-        let audio = preList[peerIdx.userName].audio;
+        let video = preList[peerIdx?.userName]?.video;
+        let audio = preList[peerIdx?.userName]?.audio;
 
         if (switchTarget === 'video') video = !video;
         else audio = !audio;
 
         return {
           ...preList,
-          [peerIdx.userName]: { video, audio },
+          [peerIdx?.userName]: { video, audio },
         };
       });
     });
@@ -681,53 +682,7 @@ const Meet = (props) => {
     return peersRef.current.find(({peer}) => peer.peerID === id);
   }
 
-
-  const switchVideoStream = (switch_action) => {
-
-    // console.log("userStream.current : ", userStream.current);
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
-
-      const bothTracks = stream.getTracks();
-
-      // const newStreamTrack = stream.getTracks().find((track) => track.kind === 'audio');
-      // const oldStreamTrack = userStream.current.getTracks().find((track) => track.kind === 'video');
-
-      const newVideoTrack = stream.getVideoTracks()[0];
-      // const newAudioTrack = stream.getAudioTracks()[0];
-      const oldVideoTrack = userStream.current.getVideoTracks()[0];
-      const oldAudioTrack = userStream.current.getAudioTracks()[0];
-
-      if (!switch_action) {
-        userStream.current.removeTrack(oldVideoTrack, userStream.current)
-      } else {
-
-        userStream.current.addTrack(newVideoTrack, userStream.current);
-      }
-
-      peersRef.current.forEach(({ peer }) => {
-        // console.log(peer.-wr);
-
-        if (!switch_action) {
-          console.log(peer.removeTrack(oldVideoTrack, userStream.current));
-
-        } else {
-          // console.log(peer);
-          // const vt = new MediaStream(newVideoTrack)
-          peer.addTrack(newVideoTrack, userStream.current);
-        }
-        // peer.addTrack(newStreamTrack, userStream.current)
-        // peer.replaceTrack(
-        //   oldStreamTrack,
-        //   newStreamTrack,
-        //   userStream.current
-        // );
-
-      });
-    }).catch((error) => {
-      console.log(error)
-    });
-
-  }
+  
 
   const stopAudioStream = () => { }
 
@@ -759,7 +714,7 @@ const Meet = (props) => {
         const userVideoTrack = userVideoRef?.current?.srcObject?.getVideoTracks()[0];
 
         videoSwitch = !videoSwitch;
-        // if (userVideoTrack) { userVideoTrack.enabled = videoSwitch }
+        if (userVideoTrack) { userVideoTrack.enabled = videoSwitch }
         console.log("is camera ON : ", videoSwitch);
         switchVideoStream(videoSwitch)
       } else {
@@ -779,8 +734,8 @@ const Meet = (props) => {
       };
     });
 
-    // socket.emit('BE-toggle-camera-audio', { roomId, switchTarget: target });
-    socket.emit('BE-toggle-camera-audio', { roomId, switchTarget: "audio" });
+    socket.emit('BE-toggle-camera-audio', { roomId, switchTarget: target });
+    // socket.emit('BE-toggle-camera-audio', { roomId, switchTarget: "audio" });
 
 
   };
@@ -901,6 +856,54 @@ const Meet = (props) => {
       }).catch((error) => {
         console.log(error)
       });
+  }
+
+  const switchVideoStream = (switch_action) => {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
+
+      const bothTracks = stream.getTracks();
+
+      // const newStreamTrack = stream.getTracks().find((track) => track.kind === 'audio');
+      // const oldStreamTrack = userStream.current.getTracks().find((track) => track.kind === 'video');
+
+      const newVideoTrack = stream.getVideoTracks()[0];
+      // const newAudioTrack = stream.getAudioTracks()[0];
+      const oldVideoTrack = userStream.current.getVideoTracks()[0];
+      const oldAudioTrack = userStream.current.getAudioTracks()[0];
+
+      if (!switch_action) {
+        userStream.current.removeTrack(oldVideoTrack, userStream.current)
+      } else {
+
+        userStream.current.addTrack(newVideoTrack, userStream.current);
+      }
+
+      peersRef.current.forEach(({ peer }) => {
+        // console.log(peer.-wr);
+
+        if (!switch_action) {
+          // peer.removeTrack(oldVideoTrack, userStream.current)
+          peer.replaceTrack(oldVideoTrack,null,userStream.current)
+
+        } else {
+          // console.log(peer);
+          // const vt = new MediaStream(newVideoTrack)
+
+          // peer.replaceTrack(null,newVideoTrack,userStream.current)
+          peer.addTrack(newVideoTrack, userStream.current);
+        }
+        // peer.addTrack(newStreamTrack, userStream.current)
+        // peer.replaceTrack(
+        //   oldStreamTrack,
+        //   newStreamTrack,
+        //   userStream.current
+        // );
+
+      });
+    }).catch((error) => {
+      console.log(error)
+    });
+
   }
 
   // nc 

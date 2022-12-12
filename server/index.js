@@ -4,6 +4,7 @@ const app = express();
 const fs = require('fs');
 const path = require('path');
 
+
 // var options = {
 //   key: fs.readFileSync('/home/nitin_goswami/Choira/JammingApp/video-group-jamming/client/ssls/privkey.pem'),
 //   cert: fs.readFileSync('/home/nitin_goswami/Choira/JammingApp/video-group-jamming/client/ssls/fullchain.pem')
@@ -22,8 +23,8 @@ cert: fs.readFileSync('./ssls/cert.pem'),
 ca: fs.readFileSync('./ssls/chain.pem')
 };
 
-const http = require('https').createServer(options,app);
-// const http = require('http').createServer(app);
+// const http = require('https').createServer(options,app);
+const http = require('http').createServer(app);
 // const http = require('http').createServer(options,app);
 
 // const http_proxy = require('http-proxy').createProxyServer({
@@ -63,7 +64,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // }
 
 // Route
-app.get('/ping', (req, res) => {
+app.get('/', (req, res) => {
   // console.log("PING", req)
   res.send({success: true}).status(200);
 });

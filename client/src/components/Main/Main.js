@@ -42,7 +42,7 @@ const Main = (props) => {
     }):null;
 
     socket.on('FE-error-user-exist', ({ error }) => {
-      console.log("FE-error-user-exist Evenet fired")
+      console.log("FE-error-user-exist")
       if (!error) {
         const roomName = roomRef.current;
         const userName = userRef.current;
