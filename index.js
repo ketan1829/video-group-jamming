@@ -3,7 +3,6 @@ const express = require('express');
 const app = express();
 const fs = require('fs');
 const path = require('path');
-const PORT = 3001;
 
 // var options = {
 //   key: fs.readFileSync('/home/nitin_goswami/Choira/JammingApp/video-group-jamming/client/ssls/privkey.pem'),
@@ -24,12 +23,6 @@ ca: fs.readFileSync('./ssls/chain.pem')
 };
 
 const http = require('https').createServer(options,app);
-
-http.createServer(function (req, res) {
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.end('Server LIVE\n');
-})
-
 // const http = require('http').createServer(app);
 // const http = require('http').createServer(options,app);
 
@@ -46,6 +39,7 @@ http.createServer(function (req, res) {
 // transports: ['polling']
 // }).listen(http);
 
+const PORT = 3001;
 
 
 const io_options = {
