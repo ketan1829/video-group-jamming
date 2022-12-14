@@ -24,8 +24,8 @@ ca: fs.readFileSync('./ssls/chain.pem')
 };
 
 // const http = require('https').createServer(options,app);
-const http = require('http').createServer(app);
-// const http = require('http').createServer(options,app);
+// const http = require('http').createServer(app);
+const http = require('http').createServer(options,app);
 
 // const http_proxy = require('http-proxy').createProxyServer({
 //   target: "http://localhost:3000",
@@ -90,8 +90,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on('BE-check-user', ({ roomId, userName }) => {
-    console.log("*****************")
-
     let error = false;
     let error_msg = 'green_flag'
     io.sockets.in(roomId).clients((err, clients) => {

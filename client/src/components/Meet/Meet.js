@@ -107,16 +107,6 @@ const Meet = (props) => {
   }, []);
 
 
-  useEffect(() => {
-    console.log("new one :\n", peers);
-    return () => { }
-  }, [peers])
-
-  useEffect(() => {
-    console.log(videoDevices);
-  }, [videoDevices])
-
-
   // nc
   function setToStart() {
 
@@ -189,7 +179,7 @@ const Meet = (props) => {
             peer.peerID = userId;
 
             // push_unique_peer({ peerID: userId, peer, userName })
-            push_unique_peer({ peer})
+            push_unique_peer({ peer })
             temp_peers.push(peer);
 
             setUserVideoAudio((preList) => {
@@ -218,10 +208,10 @@ const Meet = (props) => {
         peer.userName = userName;
         peer.peerID = from;
 
-        push_unique_peer({peer})
+        push_unique_peer({ peer })
 
         setPeers((prepeers) => {
-          if(prepeers.length > 0){
+          if (prepeers.length > 0) {
             prepeers = prepeers.filter((prepeer) => {
               if (prepeer.peerID === peer.peerID) {
                 return peer
@@ -229,11 +219,11 @@ const Meet = (props) => {
               return true
             });
             return [...prepeers];
-          }else{
+          } else {
             return [...prepeers, peer];
           }
         });
-        
+
         setUserVideoAudio((preList) => {
           return {
             ...preList,
@@ -280,13 +270,13 @@ const Meet = (props) => {
   }
 
   // nc
-  const push_unique_peer = ({ peer}) => {
+  const push_unique_peer = ({ peer }) => {
     if (peersRef.current.length > 0) {
       peersRef.current.forEach((peerData, index) => {
 
         if (peerData.peer.userName === peer.userName) {
           console.log("replacing peer");
-          peersRef.current[index] = {peer};
+          peersRef.current[index] = { peer };
         } else {
           console.log("adding new peer");
           peersRef.current.push({ peer })
@@ -294,7 +284,7 @@ const Meet = (props) => {
       }
       )
     } else {
-      peersRef.current.push({peer })
+      peersRef.current.push({ peer })
     }
   }
 
@@ -385,7 +375,8 @@ const Meet = (props) => {
       // allowHalfTrickle: false,
       reconnectTimmer: 2000,
       sdpTransform: (sdp) => {
-        let sdp2 = setMediaBitrate(sdp, 'audio', 510000);
+        let sdp2 = setMediaBitrate(sdp, 'audio', 32000);
+        // sdp2 += "a=fmtp:100 x-google-min-bitrate=1000\r\na=sendrecv\r\n";
         sdp2 += "a=fmtp:100 x-google-min-bitrate=1000\r\n";
         return sdp2;
       },
@@ -461,25 +452,12 @@ const Meet = (props) => {
     })
 
     peer.on('track', (track, stream) => {
-      console.log("track 1");
       track.addEventListener('mute', () => {
-        console.log('track removed1')
+        console.log(`removed ${track.kind} track of user ${peer.userName}`);
       });
 
       track.addEventListener('unmute', () => {
-        console.log('track added 1')
-      });
-
-      // console.log(track);
-    })
-    peer.on('track', (track) => {
-      console.log("track 12");
-      track.addEventListener('mute', () => {
-        console.log('track removed 12')
-      });
-
-      track.addEventListener('unmute', () => {
-        console.log('track added 12')
+        console.log(`added ${track.kind} track of user ${peer.userName}`);
       });
 
       // console.log(track);
@@ -521,6 +499,7 @@ const Meet = (props) => {
       objectMode: false,
       sdpTransform: (sdp) => {
         let sdp2 = setMediaBitrate(sdp, 'audio', 510000);
+        // sdp2 += "a=fmtp:100 x-google-min-bitrate=3000\r\na=sendrecv\r\n";
         sdp2 += "a=fmtp:100 x-google-min-bitrate=3000\r\n";
         return sdp2;
       },
@@ -616,25 +595,26 @@ const Meet = (props) => {
       console.log("track 21");
 
       track.addEventListener('mute', () => {
-        console.log("removed track : ", track);
+        console.log(`removed ${track.kind} track of user ${peer.userName}`);
 
         // peer.signal("hiiii")
       });
 
       track.addEventListener('unmute', () => {
-        console.log('track added 22')
+        console.log(`added ${track.kind} track of user ${peer.userName}`);
+
       });
 
       // console.log(track);
     })
 
     peer.on('disconnect', () => {
-      console.log("Ok peer dissconnected ")
+      console.log(`${peer.userName} is dissconnected `)
       peer.destroy();
     });
 
     peer.on('error', (error) => {
-      console.log("errorrrrrrrrrrrrrrrrrrrrrr 2", error);
+      console.log("error 2", error);
 
       removePeer(peer)
     })
@@ -679,10 +659,10 @@ const Meet = (props) => {
   }
 
   function findPeer(id) {
-    return peersRef.current.find(({peer}) => peer.peerID === id);
+    return peersRef.current.find(({ peer }) => peer.peerID === id);
   }
 
-  
+
 
   const stopAudioStream = () => { }
 
@@ -858,7 +838,7 @@ const Meet = (props) => {
       });
   }
 
-  const switchVideoStream = (switch_action) => {
+  const switchVideoStream1 = (switch_action) => {
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
 
       const bothTracks = stream.getTracks();
@@ -871,26 +851,40 @@ const Meet = (props) => {
       const oldVideoTrack = userStream.current.getVideoTracks()[0];
       const oldAudioTrack = userStream.current.getAudioTracks()[0];
 
-      if (!switch_action) {
-        userStream.current.removeTrack(oldVideoTrack, userStream.current)
-      } else {
+      // if (!switch_action) {
+      //   // userStream.current.replaceTrack(newVideoTrack,oldVideoTrack,userStream.current)
+      //   // userStream.current.removeTrack(oldVideoTrack, userStream.current)
+      //   newVideoTrack.stop()
+      // } else {
+      //   // userStream.current.addTrack(newVideoTrack, userStream.current);
+      //   // userStream.current.replaceTrack(newVideoTrack,oldVideoTrack,userStream.current)
 
-        userStream.current.addTrack(newVideoTrack, userStream.current);
-      }
+      // }
 
       peersRef.current.forEach(({ peer }) => {
         // console.log(peer.-wr);
 
+
         if (!switch_action) {
           // peer.removeTrack(oldVideoTrack, userStream.current)
-          peer.replaceTrack(oldVideoTrack,null,userStream.current)
+
+          peer.replaceTrack(
+            oldVideoTrack,
+            null,
+            userStream.current
+          )
 
         } else {
           // console.log(peer);
           // const vt = new MediaStream(newVideoTrack)
 
-          // peer.replaceTrack(null,newVideoTrack,userStream.current)
-          peer.addTrack(newVideoTrack, userStream.current);
+          //using these:
+          peer.replaceTrack(
+            newVideoTrack,
+            newVideoTrack,
+            userStream.current
+          )
+          // peer.addTrack(newVideoTrack, userStream.current);
         }
         // peer.addTrack(newStreamTrack, userStream.current)
         // peer.replaceTrack(
@@ -900,10 +894,52 @@ const Meet = (props) => {
         // );
 
       });
+      userStream.current = stream
     }).catch((error) => {
       console.log(error)
     });
 
+  }
+
+  const switchVideoStream = (cameraState) => {
+    console.log("is camera on: ", cameraState);
+    // if (cameraState) {
+    // turning camera off
+    // currentStream will be your exisiting web-camera stream
+    // here we are stopping camera stream & turning off camera light
+
+    if (peersRef.current.length > 0 && !cameraState) {
+
+      // userStream.current.getVideoTracks().forEach(track => {
+      //   track.stop()
+      // })
+
+      // here we replacing peers track
+      peersRef.current.forEach((participant) => {
+        !participant.peer.destroyed && participant.peer.replaceTrack(
+          participant.peer.streams[0].getTracks().find((track) => track.kind === 'video'),
+          null,
+          participant.peer.streams[0])
+      })
+
+    } else {
+      // here we are turning camera back on
+      const constraints = { video: true, audio: true };
+      navigator.mediaDevices.getUserMedia(constraints)
+        .then((currentStream) => {
+
+          if (peersRef.current.length > 0) {
+            peersRef.current.forEach((participant) => {
+              !participant.peer.destroyed && participant.peer.replaceTrack(
+                participant.peer.streams[0].getTracks().find((track) => track.kind === 'video'),
+                currentStream.getTracks().find((track) => track.kind === 'video'),
+                participant.peer.streams[0]
+              )
+            })
+          }
+        })
+    }
+    // }
   }
 
   // nc 
