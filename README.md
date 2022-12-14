@@ -24,6 +24,7 @@ This project is **deployed** locally
 - Text chat
 - Mute Video/Audio
 - Screen Sharing
+- Metronome
 
 ## Installation
 ### Clone
