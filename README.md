@@ -57,7 +57,8 @@ This project is **deployed** locally
 
 ## Todo 🔨🔨🔨
 
-- [x] Switch Camera options
+- [✔] Switch Camera options
+- [x] Need to show black screen at peer side when camera turn off
 
 ## License
 [MIT License](./LICENSE)
