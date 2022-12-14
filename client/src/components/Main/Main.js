@@ -41,8 +41,7 @@ const Main = (props) => {
       userName : ''
     }):null;
 
-    socket.on('FE-error-user-exist', ({ error }) => {
-      console.log("FE-error-user-exist")
+    socket.on('USER_EXIST_STATUS', ({ error }) => {
       if (!error) {
         const roomName = roomRef.current;
         const userName = userRef.current;
@@ -73,7 +72,7 @@ const Main = (props) => {
       setErr(true);
       setErrMsg('Enter Room Name or User Name');
     } else {
-      socket.emit('BE-check-user', { roomId: roomName, userName })
+      socket.emit('CHECK_USER_EXIST', { roomId: roomName, userName })
     }
   }
   const onFinish = values => {

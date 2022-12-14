@@ -95,11 +95,10 @@ const Meet = (props) => {
     //   setMetronomeData((prev) => ({
     //     ...prev,metroData
     //   }))
-
     // })
 
     return () => {
-      // socket.disconnect();
+      socket.disconnect();
       clearInterval(statsIntervals);
     };
 
@@ -161,10 +160,10 @@ const Meet = (props) => {
       userVideoRef.current.srcObject = stream; // local
       userStream.current = stream;
 
-      socket.emit('BE-join-room', { roomId, userName: currentUser });
+      socket.emit('JOIN_JAM_ROOM', { roomId, userName: currentUser });
 
       // here new peers get added
-      socket.on('FE-user-join', (users) => {
+      socket.on('USER_JOIN', (users) => {
         console.log("Fe user join");
         const temp_peers = [];
         users.forEach(({ userId, info }) => {
@@ -173,10 +172,8 @@ const Meet = (props) => {
 
           if (userName !== currentUser) {
             const peer = createPeer(userId, socket.id, stream);
-
             peer.userName = userName;
             peer.peerID = userId;
-
             // push_unique_peer({ peerID: userId, peer, userName })
             push_unique_peer({ peer })
             temp_peers.push(peer);
