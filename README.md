@@ -55,6 +55,10 @@ This project is **deployed** locally
   </code>
 </pre>
 
+**socket.io events**
+- USER_EXIST_STATUS
+- CHECK_USER_EXIST
+
 ## Todo 🔨🔨🔨
 
 - [x] Dynamic user Video card (for more then 2 users)
