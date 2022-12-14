@@ -1,9 +1,9 @@
 const express = require('express');
-// const http = require('http');
+let http = require('http');
 const app = express();
 const fs = require('fs');
 const path = require('path');
-
+let io = require('socket.io');
 
 // var options = {
 //   key: fs.readFileSync('/home/nitin_goswami/Choira/JammingApp/video-group-jamming/client/ssls/privkey.pem'),
@@ -24,8 +24,7 @@ ca: fs.readFileSync('./ssls/chain.pem')
 };
 
 // const http = require('https').createServer(options,app);
-// const http = require('http').createServer(app);
-const http = require('http').createServer(options,app);
+http = http.createServer(options,app);
 
 // const http_proxy = require('http-proxy').createProxyServer({
 //   target: "http://localhost:3000",
@@ -40,14 +39,15 @@ const http = require('http').createServer(options,app);
 // transports: ['polling']
 // }).listen(http);
 
-const PORT = 3001;
+const PORT = process.env.PORT;
+
+console.log('PORT :',PORT);
 
 
 const io_options = {
-  path:'/jamsocket'
+  path:'/'
 }
-// const io = require('socket.io')(http,io_options);
-const io = require('socket.io')(http);
+io = io(http,io_options);
 
 // io.set('transports', ['xhr-polling','polling','websocket']);
 

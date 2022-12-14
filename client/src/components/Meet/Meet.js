@@ -65,7 +65,7 @@ const Meet = (props) => {
     const _ = sessionStorage.getItem('user') === null ? props.history.push("/", { roomId }) : setToStart()
 
     const statsIntervals = setInterval(() => {
-      // peersRef.current.forEach(({ peer }) => {console.log(peer);})
+      
       if (peersRef.current.length) {
 
         peersRef.current.forEach(({ peer }, index) => {
@@ -73,7 +73,6 @@ const Meet = (props) => {
           let peerStats = {};
           peer?.getStats((err, stats) => {
             const _ = err ? console.log("stats error : ", err) : null;
-
             stats.forEach((stats_report) => {
               if (stats_report.kind === "video" && stats_report.type === "remote-inbound-rtp") {
                 peerStats['rtt'] = stats_report.roundTripTime
