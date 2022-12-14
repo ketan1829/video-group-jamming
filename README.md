@@ -58,6 +58,7 @@ This project is **deployed** locally
 **socket.io events**
 - USER_EXIST_STATUS
 - CHECK_USER_EXIST
+- JOIN_JAM_ROOM
 
 ## Todo 🔨🔨🔨
 
