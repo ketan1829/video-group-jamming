@@ -2,7 +2,7 @@
 
 Videe-Group-Jamming is a simple video jam application for multi-users based on React, Node Express and WebRTC.
 
-This project is **deployed** locally
+This project is **deployed** on https://jam.choira.io
 
 **Technologies Used**
 
@@ -57,7 +57,10 @@ This project is **deployed** locally
 
 ## Todo 🔨🔨🔨
 
-- [✔] Switch Camera options
+- [✔] Switch audio options
+- [✔] 4 screen
+- [✔] Audience Section
+- [✔] UI Improve
 - [x] Need to show black screen at peer side when camera turn off
 
 ## License
