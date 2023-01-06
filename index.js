@@ -50,7 +50,7 @@ const io_options = {
 const io = require('socket.io')(http);
 
 // io.set('transports', ['xhr-polling','polling','websocket']);
-io.set('transports', ["websocket", "polling"]);
+io.set('transports', ["websocket"]);
 
 let socketList = {};
 
