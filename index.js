@@ -32,13 +32,13 @@ const http = require('https').createServer(options,app);
 //   ws: true,
 // }).listen(app);
 
-// const io = require('socket.io')(http,{path:'/jamsocket',cors:{
-//   origin: "*",
-//   methods: ["GET", "POST"],
-//   allowedHeaders: ["Origin", "Content-Type", "X-Auth-Token", "X-Requested-With", "Accept", "Authorization", "X-CSRF-TOKEN", "X-Socket-Id"]
-// },
-// transports: ['polling']
-// }).listen(http);
+const io = require('socket.io')(http,{path:'/socket.io',cors:{
+  origin: "*",
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Origin", "Content-Type", "X-Auth-Token", "X-Requested-With", "Accept", "Authorization", "X-CSRF-TOKEN", "X-Socket-Id"]
+},
+transports: ['polling']
+}).listen(http);
 
 const PORT = 3001;
 
@@ -47,7 +47,7 @@ const io_options = {
   path:'/jamsocket'
 }
 // const io = require('socket.io')(http,io_options);
-const io = require('socket.io')(http);
+// const io = require('socket.io')(http);
 
 // io.set('transports', ['xhr-polling','polling','websocket']);
 io.set('transports', ["websocket"]);
