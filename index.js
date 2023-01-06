@@ -40,7 +40,7 @@ const http = require('https').createServer(options,app);
 // transports: ['polling']
 // }).listen(http);
 
-const PORT = 3002;
+const PORT = 3001;
 
 
 const io_options = {
