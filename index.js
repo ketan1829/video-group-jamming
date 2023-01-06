@@ -15,7 +15,7 @@ var certificate = fs.readFileSync('ssls/cert.pem', 'utf8').toString();
 var chain = fs.readFileSync('ssls/chain.pem').toString();
 var options = {
   cors: {
-    'Access-Control-Allow-Origin': 'https://ket-jam.deploy.choira.io'
+    origin: 'https://ket-jam.deploy.choira.io'
 },
 key: fs.readFileSync('./ssls/privkey.pem'),
 cert: fs.readFileSync('./ssls/cert.pem'),
@@ -53,6 +53,12 @@ const io = require('socket.io')(http);
 let socketList = {};
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use((req,res,next)=>{
+  res.setHeader('Access-Control-Allow-Origin','*');
+  res.setHeader('Access-Control-Allow-Methods','GET,POST,PUT,PATCH,DELETE');
+  res.setHeader('Access-Control-Allow-Methods','Content-Type','Authorization');
+  next(); 
+})
 
 // if (process.env.NODE_ENV === 'production') {
 //   app.use(express.static(path.join(__dirname, '../client/build')));
