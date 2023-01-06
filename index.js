@@ -15,7 +15,7 @@ var certificate = fs.readFileSync('ssls/cert.pem', 'utf8').toString();
 var chain = fs.readFileSync('ssls/chain.pem').toString();
 var options = {
   cors: {
-    origin: 'https://ket-jam.deploy.choira.io',
+    origins: ["*"], // 'https://ket-jam.deploy.choira.io',
     methods: ["GET", "POST"]
 },
 key: fs.readFileSync('./ssls/privkey.pem'),
